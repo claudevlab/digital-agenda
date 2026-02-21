@@ -34,6 +34,16 @@ Il progetto adotta un'architettura moderna a **microservizi** e una comunicazion
 git clone https://github.com/claudevlab/digital-agenda.git
 cd digital-agenda
 
+## 🚀 Sviluppi Futuri e Roadmap
+
+Per far evolvere l'ecosistema **Digital Agenda**, sono previste le seguenti funzionalità:
+
+- **💳 Integrazione Pagamenti Online:** Implementazione degli SDK di **Stripe** o **PayPal** per consentire ai clienti di pagare gli appuntamenti direttamente durante la prenotazione.
+- **📱 Applicazione Mobile:** Sviluppo di un'app nativa **Android / iOS** (usando **Flutter** o **React Native**) per un'esperienza mobile ottimizzata sia per professionisti che per clienti.
+- **🔔 Notifiche Real-time:** Integrazione di **WebSockets** o **Firebase Cloud Messaging (FCM)** per notifiche push istantanee sugli aggiornamenti degli appuntamenti.
+- **📊 Dashboard Professionale:** Una dashboard avanzata per i professionisti per monitorare i guadagni mensili e le statistiche degli appuntamenti.
+
+
 -----------------------------ENG---------------------------------------------------
 
 # 📅 Digital Agenda - Full Stack Web Application
@@ -71,4 +81,14 @@ The project leverages a modern **microservices** architecture and **event-driven
 ```bash
 git clone https://github.com/claudevlab/digital-agenda.git
 cd digital-agenda
+
+## 🚀 Future Improvements & Roadmap
+
+To further enhance the **Digital Agenda** ecosystem, the following features are planned:
+
+- **💳 Online Payments Integration:** Implementation of **Stripe** or **PayPal** SDKs to allow customers to pay for appointments directly during the booking process.
+- **📱 Mobile Application:** Development of a dedicated **Android / iOS** app (using **Flutter** or **React Native**) for a seamless mobile experience for both professionals and customers.
+- **🔔 Real-time Notifications:** Integration of **WebSockets** or **Firebase Cloud Messaging (FCM)** for instant push notifications on appointment status updates.
+- **📊 Professional Dashboard:** An advanced analytics dashboard for professionals to track their monthly earnings and appointment statistics.
+
 
