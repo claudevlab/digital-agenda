@@ -1,0 +1,37 @@
+<div class="calendar-wrapper">
+
+  <div class="calendar-header">
+    <h3>Gestione Disponibilità</h3>
+    <p class="calendar-hint">
+      Clicca su un giorno per bloccarlo (rosso) o sbloccarlo
+    </p>
+  </div>
+
+  <!-- Legenda -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-dot available"></span>
+      <span>Disponibile</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot blocked"></span>
+      <span>Non disponibile</span>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert-danger">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="empty-state">
+      <p>Caricamento calendario...</p>
+    </div>
+  }
+
+  @if (!isLoading()) {
+    <full-calendar [options]="calendarOptions()"></full-calendar>
+  }
+
+</div>
+

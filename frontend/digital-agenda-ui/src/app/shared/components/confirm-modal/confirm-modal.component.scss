@@ -1,0 +1,53 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;                          // top/right/bottom/left: 0 in una riga
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  animation: slideIn 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .modal-icon {
+    font-size: 1.4rem;
+  }
+}
+
+.modal-body p {
+  color: #555;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}

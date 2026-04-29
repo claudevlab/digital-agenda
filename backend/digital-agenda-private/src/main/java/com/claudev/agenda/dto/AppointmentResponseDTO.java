@@ -11,14 +11,17 @@ private LocalDateTime appointmentDate;
 private Integer durationMinutes;
 private AppointmentStatus appointmentStatus;
 private String notes;
+private String reasonRejected;
 
 // info libero professionista
 private Long professionalId;
 private String professionalName; // utile per visualizzare con chi ha l'appuntamento
 
-// info cliente
+// info cliente utile per visualizzare il profilo
 private Long customerId;
-private String customerName; // stesso discorso di prima ma inverso
+private String customerName;
+private String customerEmail;
+private String customerPhone;
 
     public Long getId() {
         return id;
@@ -91,4 +94,30 @@ private String customerName; // stesso discorso di prima ma inverso
     public void setCustomerName(String customerName) {
         this.customerName = customerName;
     }
+
+    public String getReasonRejected() {
+        return reasonRejected;
+    }
+
+    public void setReasonRejected(String reasonRejected) {
+        this.reasonRejected = reasonRejected;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
 }
+
+

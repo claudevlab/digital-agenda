@@ -25,7 +25,7 @@ public class UserProfessionalRegistrationDTO {
     @NotBlank(message = "Il numero di telefono è obbligatorio")
     private String phoneNumber;
 
-    @NotBlank(message = "La Partita IVA è obbligatoria per i professionisti")
+
     private String vatRegistrationNumber;
 
     @NotBlank(message = "Il titolo di lavoro è obbligatorio")

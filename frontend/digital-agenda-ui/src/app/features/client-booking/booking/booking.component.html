@@ -1,0 +1,372 @@
+<div class="container py-4">
+
+  <!-- upgrade profilo a profesionista -->
+<div class="alert alert-info d-flex align-items-center justify-content-between shadow-sm mb-4">
+  <div>
+    <h5 class="fw-bold mb-1">Sei un professionista?</h5>
+    <p class="mb-0 small">Completa il tuo profilo aziendale per configurare la tua agenda e ricevere prenotazioni dai clienti.</p>
+  </div>
+  <!-- IL BOTTONE CLICCABILE! -->
+  <a routerLink="/upgrade" class="btn btn-primary px-4 py-2 fw-bold text-white text-decoration-none">
+    <i class="bi bi-rocket-takeoff me-2"></i> Passa a Professionista
+  </a>
+</div>
+
+<br>
+<br>
+
+  <!-- ===== WIZARD PRENOTAZIONE (visibile solo se showBookingForm = true) ===== -->
+  <div *ngIf="showBookingForm">
+
+    <div class="dashboard-header mb-4">
+      <h4><i class="bi bi-calendar-plus me-2"></i>Nuova Prenotazione</h4>
+      <button class="btn-refresh" (click)="backToDashboard()">
+        ← Torna ai miei appuntamenti
+      </button>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper d-flex align-items-center gap-2 mb-4" *ngIf="step < 4">
+      <span [class]="step >= 1 ? 'step-badge active' : 'step-badge'">1 · Professionista</span>
+      <span class="step-arrow">›</span>
+      <span [class]="step >= 2 ? 'step-badge active' : 'step-badge'">2 · Data e Slot</span>
+      <span class="step-arrow">›</span>
+      <span [class]="step >= 3 ? 'step-badge active' : 'step-badge'">3 · Conferma</span>
+    </div>
+
+    <!-- STEP 1 -->
+<div *ngIf="step === 1">
+  <h5 class="mb-4">Scegli il professionista</h5>
+
+  <!-- BARRA DI RICERCA REATTIVA -->
+    <div class="search-box" style="max-width: 300px; width: 100%;">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" 
+               class="form-control border-start-0 ps-0" 
+               placeholder="Cerca per nome, cognome o professione..." 
+               [(ngModel)]="searchQuery"
+               (ngModelChange)="onSearchChange($event)">
+      </div>
+    </div>
+
+    <br>
+  <div class="row g-3 gy-4">
+    <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let prof of professionals">
+      <div class="card professional-card h-100" (click)="selectProfessional(prof)">
+        <div class="card-body">
+
+          <div class="avatar-circle mx-auto mb-2">
+            {{ prof.firstName.charAt(0) }}{{ prof.lastName.charAt(0) }}
+          </div>
+
+          <h6 class="mb-1">{{ getFullName(prof.firstName, prof.lastName) }}</h6>
+          <small class="d-block mb-2">{{ prof.jobTitle }}</small>
+
+          <ul class="list-unstyled mb-2">
+            <li><i class="bi bi-envelope me-1"></i>{{ prof.email }}</li>
+            <li><i class="bi bi-telephone me-1"></i>{{ prof.phoneNumber }}</li>
+            <li><i class="bi bi-briefcase me-1"></i>P.IVA: {{ prof.vatRegistrationNumber }}</li>
+          </ul>
+
+          <div class="d-flex gap-1 flex-wrap justify-content-center">
+            <span class="badge" *ngIf="prof.remote">
+              <i class="bi bi-wifi me-1"></i>Remoto
+            </span>
+            <span class="badge" *ngIf="prof.onSite">
+              <i class="bi bi-geo-alt me-1"></i>In sede
+            </span>
+          </div>
+
+        </div>
+        <div class="card-footer">
+          <span>Seleziona →</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="professionals.length === 0" class="col-12">
+      <p class="text-muted">Nessun professionista disponibile al momento.</p>
+    </div>
+  </div>
+</div>
+
+    <!-- STEP 2 -->
+<div *ngIf="step === 2">
+  
+  <!-- Card info professionista selezionato -->
+  <div class="selected-prof-banner mb-4">
+    <div class="apt-avatar me-3">
+      {{ selectedProfessional!.firstName.charAt(0) }}{{ selectedProfessional!.lastName.charAt(0) }}
+    </div>
+    <div class="flex-grow-1">
+      <h5 class="mb-0 text-primary fw-bold">
+        {{ getFullName(selectedProfessional!.firstName, selectedProfessional!.lastName) }}
+      </h5>
+      <small class="text-muted fst-italic">{{ selectedProfessional!.jobTitle }}</small>
+    </div>
+    <button class="btn-back-link" (click)="step = 1">
+      ← Cambia professionista
+    </button>
+  </div>
+
+  <!-- Card selezione data + durata -->
+  <div class="booking-card mb-4">
+    <h6 class="booking-card-title">
+      <i class="bi bi-calendar3 me-2"></i>Seleziona una data
+    </h6>
+
+    <div class="d-flex align-items-start gap-4 flex-wrap">
+
+      <div>
+        <input type="date" class="form-control booking-date-input"
+               [(ngModel)]="selectedDate" [min]="today" (change)="onDateChange()">
+        @if (selectedDate) {
+          <small class="text-primary mt-1 d-block fw-semibold">
+            <i class="bi bi-calendar-day me-1"></i>{{ getDayOfWeekItalian(selectedDate) }}
+          </small>
+        }
+      </div>
+
+      <div *ngIf="selectedDate">
+        <label class="form-label fw-semibold small text-muted mb-1">Durata appuntamento</label>
+        <select class="form-select booking-select"
+                [(ngModel)]="durationMinutes" (change)="onDateChange()">
+          <option [value]="60">60 minuti</option>
+          <option [value]="120">2 ore</option>
+          <option [value]="180">3 ore</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-muted d-flex align-items-center gap-2 mb-3">
+    <span class="spinner-border spinner-border-sm"></span> Caricamento slot...
+  </div>
+
+  <!-- Card slot disponibili -->
+  <div *ngIf="!loading && selectedDate" class="booking-card">
+    <h6 class="booking-card-title">
+      <i class="bi bi-clock me-2"></i>Slot disponibili
+    </h6>
+
+    <div *ngIf="getTimeSlotsForSchedule(0).length > 0" class="d-flex flex-wrap gap-2">
+      <button class="btn slot-btn"
+              *ngFor="let ts of getTimeSlotsForSchedule(0)"
+              [class.btn-success]="ts === selectedTimeSlot"
+              [class.btn-outline-success]="ts !== selectedTimeSlot"
+              (click)="selectTimeSlot(ts)">
+        <i class="bi bi-clock me-1"></i>{{ ts }}
+      </button>
+    </div>
+
+    <div *ngIf="getTimeSlotsForSchedule(0).length === 0" class="empty-state">
+      <p>Nessuno slot disponibile per questa data.</p>
+    </div>
+
+  </div>
+
+</div>
+
+    <!-- STEP 3 -->
+    <div *ngIf="step === 3">
+      <button class="btn btn-link ps-0 mb-3 text-decoration-none" (click)="step = 2">
+        ← Torna indietro
+      </button>
+      <h5 class="mb-3">Riepilogo prenotazione</h5>
+      <ul class="list-group mb-4" style="max-width: 440px;">
+        <li>
+          <span class="text-muted"><i class="bi bi-person me-2"></i>Professionista</span>
+          <strong>{{ getFullName(selectedProfessional!.firstName, selectedProfessional!.lastName) }}</strong>
+        </li>
+        <li>
+          <span class="text-muted"><i class="bi bi-calendar me-2"></i>Data</span>
+          <strong>{{ selectedDate }}</strong>
+        </li>
+        <li>
+          <span class="text-muted"><i class="bi bi-clock me-2"></i>Orario</span>
+          <strong>{{ selectedTimeSlot }}</strong>
+        </li>
+      </ul>
+      <div class="mb-4" style="max-width: 440px;">
+        <label class="form-label fw-semibold">Note (opzionale)</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="notes"
+          placeholder="Aggiungi una nota per il professionista..."></textarea>
+      </div>
+      <button class="btn btn-primary px-4" (click)="confirmBooking()" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        Conferma Appuntamento
+      </button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div *ngIf="step === 4" class="text-center py-5">
+      <div class="fs-1 mb-3">✅</div>
+      <h4 class="text-success mb-2">{{ successMessage }}</h4>
+      <p class="text-muted">Riceverai una conferma dal professionista a breve.</p>
+      <div class="d-flex gap-3 justify-content-center mt-3">
+        <button class="btn btn-primary" (click)="newBooking()">
+          <i class="bi bi-plus-circle me-1"></i>Prenota un altro
+        </button>
+        <button class="btn btn-outline-secondary" (click)="backToDashboard()">
+          <i class="bi bi-list-check me-1"></i>I miei appuntamenti
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <!-- fine wizard -->
+
+
+  <!-- ===== DASHBOARD APPUNTAMENTI (visibile solo se showBookingForm = false) ===== -->
+  <div *ngIf="!showBookingForm">
+
+    <div class="dashboard-header mb-4">
+      <h4><i class="bi bi-list-check me-2"></i>I miei appuntamenti</h4>
+    </div>
+
+    <!-- TRE CARD KPI -->
+    <div class="stats-grid mb-4">
+
+      <div class="stat-card stat-card--new"
+           (click)="newBooking()"
+           style="cursor:pointer">
+        <h3>Nuova Prenotazione</h3>
+        <p class="stat-number">+</p>
+        <small class="stat-hint">Prenota un appuntamento</small>
+      </div>
+
+      <div class="stat-card stat-card--upcoming"
+           [class.stat-card--active-upcoming]="activeTab === 'upcoming'"
+           (click)="activeTab = 'upcoming'"
+           style="cursor:pointer">
+        <h3>Prossimi</h3>
+        <p class="stat-number">{{ upcomingAppointments.length }}</p>
+        <small class="stat-hint">
+          {{ activeTab === 'upcoming' ? '✕ Deseleziona' : 'Clicca per vedere' }}
+        </small>
+      </div>
+
+      <div class="stat-card stat-card--past"
+           [class.stat-card--active-past]="activeTab === 'past'"
+           (click)="activeTab = 'past'"
+           style="cursor:pointer">
+        <h3>Storico</h3>
+        <p class="stat-number">{{ pastAppointments.length }}</p>
+        <small class="stat-hint">
+          {{ activeTab === 'past' ? '✕ Deseleziona' : 'Clicca per vedere' }}
+        </small>
+      </div>
+
+    </div>
+
+    <!-- LISTA PROSSIMI -->
+    <div *ngIf="activeTab === 'upcoming'">
+      <div class="card-section">
+        <div class="section-header mb-3">
+          <h5 class="mb-0">
+            Prossimi Appuntamenti
+            <span class="filter-badge filter-badge--upcoming">In programma</span>
+          </h5>
+        </div>
+        <div *ngIf="upcomingAppointments.length === 0" class="empty-state">
+          <p>Nessun appuntamento in programma.</p>
+        </div>
+        <div class="appointment-list">
+          <div *ngFor="let apt of upcomingAppointments"
+               class="appointment-item"
+               [class.apt-pending]="apt.appointmentStatus === 'PENDING'"
+               [class.apt-confirmed]="apt.appointmentStatus === 'CONFIRMED'">
+            <div class="apt-client">
+              <div class="apt-avatar">{{ apt.professionalName.charAt(0).toUpperCase() }}</div>
+              <div>
+                <strong>{{ apt.professionalName }}</strong>
+                <small class="d-block text-muted">Professionista</small>
+              </div>
+            </div>
+            <div class="apt-datetime">
+              <i class="bi bi-calendar-event me-1"></i>{{ formatDateTime(apt.appointmentDate) }}
+              <small class="d-block text-muted">{{ apt.durationMinutes }} min</small>
+            </div>
+            <div class="apt-notes">
+              <span *ngIf="apt.notes"><i class="bi bi-chat-left-text me-1"></i>{{ apt.notes }}</span>
+              <span *ngIf="!apt.notes" class="text-muted">—</span>
+            </div>
+            <div class="apt-status">
+              <span [class]="'apt-badge ' + getStatusClass(apt.appointmentStatus)">
+                {{ getStatusLabel(apt.appointmentStatus) }}
+              </span>
+            </div>
+            <div class="apt-actions">
+              <button class="btn-reject" (click)="openCancelModal(apt.id)">
+                <i class="bi bi-x-lg me-1"></i>Cancella
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA STORICO -->
+    <div *ngIf="activeTab === 'past'">
+      <div class="card-section">
+        <div class="section-header mb-3">
+          <h5 class="mb-0">
+            Storico Appuntamenti
+            <span class="filter-badge filter-badge--past">Passati</span>
+          </h5>
+        </div>
+        <div *ngIf="pastAppointments.length === 0" class="empty-state">
+          <p>Nessuno storico disponibile.</p>
+        </div>
+        <div class="appointment-list">
+          <div *ngFor="let apt of pastAppointments"
+               class="appointment-item"
+               [class.apt-confirmed]="apt.appointmentStatus === 'CONFIRMED'"
+               [class.apt-cancelled]="apt.appointmentStatus === 'CANCELLED'">
+            <div class="apt-client">
+              <div class="apt-avatar">{{ apt.professionalName.charAt(0).toUpperCase() }}</div>
+              <div>
+                <strong>{{ apt.professionalName }}</strong>
+                <small class="d-block text-muted">Professionista</small>
+              </div>
+            </div>
+            <div class="apt-datetime">
+              <i class="bi bi-calendar-event me-1"></i>{{ formatDateTime(apt.appointmentDate) }}
+              <small class="d-block text-muted">{{ apt.durationMinutes }} min</small>
+            </div>
+            <div class="apt-notes">
+              <span *ngIf="apt.notes"><i class="bi bi-chat-left-text me-1"></i>{{ apt.notes }}</span>
+              <span *ngIf="!apt.notes" class="text-muted">—</span>
+            </div>
+            <div class="apt-status">
+              <span [class]="'apt-badge ' + getStatusClass(apt.appointmentStatus)">
+                {{ getStatusLabel(apt.appointmentStatus) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- fine dashboard -->
+
+  <!-- Modal -->
+  @if (showCancelModal) {
+    <app-confirm-modal
+      title="Cancella Appuntamento"
+      message="Sei sicuro di voler cancellare questo appuntamento? Il professionista verrà notificato via email."
+      confirmLabel="Sì, cancella"
+      cancelLabel="Torna indietro"
+      confirmClass="btn-danger"
+      (confirmed)="onCancelConfirmed()"
+      (cancelled)="onCancelDismissed()">
+    </app-confirm-modal>
+  }
+
+</div>

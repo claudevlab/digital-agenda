@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +24,8 @@ senza che ti chiede ogni volta il biglietto
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
@@ -37,14 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("FILTER CHECK - Header: " + authHeader); // <--- LOG 1
+        logger.info("FILTER CHECK - Header: {}", authHeader); // <--- LOG 1
         final String jwt;
         final String userEmail;
 
         // 1 - controllo preliminare : se manca l'header oppire non e' Bearer passa oltre cioe' lascia gestire a spring security
         if (authHeader == null  || !authHeader.startsWith("Bearer ")) {  // l'intestazione inizia con bearer + spazio
 
-            System.out.println("Nessun token o formato errato. Passo oltre."); // <--- LOG 2
+            logger.info("Nessun token o formato errato. Passo oltre."); // <--- LOG 2
             filterChain.doFilter(request,response);
             return;
         }
@@ -58,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // se il token e danneggiato o scaduto il codice continua rendendo visibili le pagine "pubbliche"
             // poi si occupera' il try/catch di assegnare l'utente come anonimo e non null
-            System.out.println(" Errore nel filtro JWT: " + e.getMessage()); // <--- LOG ERRORE
+            logger.info(" Errore nel filtro JWT: {}", e.getMessage()); // <--- LOG ERRORE
             filterChain.doFilter(request, response);
             return;  // fine lavoro --> non esegue altri controlli non piu' necessari
         }
@@ -87,5 +91,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request,response);
 
 
+    }
+
+    // Questo metodo evita che il filtro scatta per le rotte di login/registrazione
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth/");
     }
 }

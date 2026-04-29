@@ -1,0 +1,58 @@
+.calendar-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.calendar-header {
+  margin-bottom: 1rem;
+  h3 { margin: 0 0 0.3rem 0; }
+}
+
+.calendar-hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0 !important;
+}
+
+.legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+
+  &.available { background: #22c55e; }
+  &.blocked   { background: #ef4444; }
+}
+
+// ng-deep necessario perché FullCalendar genera HTML fuori dallo scope del componente
+::ng-deep {
+  .fc-button-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  .fc-button-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+  }
+
+  .fc-day:hover {
+    background-color: #eff6ff !important;
+    cursor: pointer;
+  }
+}

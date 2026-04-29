@@ -12,4 +12,5 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule,Long> {
     List<Schedule> findByUser (User user);
     List<Schedule> findByUserAndDayOfWeek (User user , DayOfWeek dayOfWeek);
+
 }

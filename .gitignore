@@ -5,6 +5,11 @@
 *.secret
 *.key
 *.pem
+**/application.properties
+**/application-local.properties
+
+# Certificati SSL
+traefik/acme.json
 
 # --- JAVA / MAVEN ---
 target/
@@ -26,9 +31,9 @@ target/
 .sts4-cache/
 
 # --- ANGULAR / NODE ---
-node_modules/
-dist/
-.angular/
+**/node_modules/
+**/dist/
+**/.angular/
 package-lock.json # Opzionale: molti lo committano, ma se usi yarn/pnpm toglilo
 npm-debug.log*
 yarn-debug.log*
@@ -41,3 +46,4 @@ Desktop.ini
 
 # --- DOCUMENTAZIONE ---
 HELP.md
+

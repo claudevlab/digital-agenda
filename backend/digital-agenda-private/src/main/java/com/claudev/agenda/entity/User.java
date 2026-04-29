@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,24 +17,24 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    //@NotBlank
     @Size(max = 50)
-    @Column(name="first_name",nullable = false)
+    @Column(name="first_name")
     private String firstName;
 
-    @NotBlank
+    //@NotBlank
     @Size(max = 50)
-    @Column(name="last_name",nullable = false)
+    @Column(name="last_name")
     private String lastName;
 
-    @NotBlank
+    //@NotBlank
     @Size(max = 50)
     @Column(nullable = false, unique = true)
     private String username;
 
-    @NotBlank
+    //@NotBlank
     @Size(min = 8, max = 255)
-    @Column(nullable = false)
+    @Column
     private  String password;
 
     @NotNull
@@ -58,15 +59,16 @@ public class User {
     @Column(name = "on_site")
     private boolean onSite;
 
-    @NotBlank
+
     @Size(max = 20)
-    @Column(name = "phone_number", nullable = false)
+    @Column(name = "phone_number")
     private String phoneNumber;
 
-    @NotBlank
+
+    //@NotBlank
     @Email
     @Size(max = 100)
-    @Column(nullable = false, unique = true)
+    @Column( unique = true)
     private String email;
 
     @OneToMany(mappedBy = "user" , cascade = CascadeType.ALL)
@@ -88,75 +90,75 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PaymentMethods> paymentMethod;
 
-    public @NotBlank @Size(max = 50) String getFirstName() {
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_token_expiry")
+    private LocalDateTime resetPasswordTokenExpiry;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(@NotBlank @Size(max = 50) String firstName) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public @NotBlank @Size(max = 50) String getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(@NotBlank @Size(max = 50) String lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
-    public @NotBlank @Size(max = 50) String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    public void setUsername(@NotBlank @Size(max = 50) String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
-    public @NotBlank @Size(min = 8, max = 255) String getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotBlank @Size(min = 8, max = 255) String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
-    public @NotBlank @Size(max = 20) String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(@NotBlank @Size(max = 20) String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public @NotBlank @Email @Size(max = 100) String getEmail() {
-        return email;
-    }
-
-    public void setEmail(@NotBlank @Email @Size(max = 100) String email) {
-        this.email = email;
-    }
-
-    public @NotNull Role getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(@NotNull Role role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
-    public @Size(min = 8, max = 255) String getJobTitle() {
+    @Nullable
+    public String getJobTitle() {
         return jobTitle;
     }
 
-    public void setJobTitle(@Size(min = 8, max = 255) String jobTitle) {
+    public void setJobTitle(@Nullable String jobTitle) {
         this.jobTitle = jobTitle;
     }
 
-    public @Size(min = 8, max = 255) String getVatRegistrationNumber() {
+    @Nullable
+    public String getVatRegistrationNumber() {
         return vatRegistrationNumber;
     }
 
-    public void setVatRegistrationNumber(@Size(min = 8, max = 255) String vatRegistrationNumber) {
+    public void setVatRegistrationNumber(@Nullable String vatRegistrationNumber) {
         this.vatRegistrationNumber = vatRegistrationNumber;
     }
 
@@ -176,20 +178,28 @@ public class User {
         this.onSite = onSite;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public List<PaymentMethods> getPaymentMethods() {
         return paymentMethods;
     }
 
     public void setPaymentMethods(List<PaymentMethods> paymentMethods) {
         this.paymentMethods = paymentMethods;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getProfilePhoto() {
@@ -232,34 +242,19 @@ public class User {
         this.paymentMethod = paymentMethod;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && role == user.role && Objects.equals(email, user.email);
+    public String getResetPasswordToken() {
+        return resetPasswordToken;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, username, role, email);
+    public void setResetPasswordToken(String resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", onSite=" + onSite +
-                ", remote=" + remote +
-                ", vatRegistrationNumber='" + vatRegistrationNumber + '\'' +
-                ", jobTitle='" + jobTitle + '\'' +
-                ", role=" + role +
-                ", password='" + password + '\'' +
-                ", username='" + username + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", id=" + id +
-                '}';
+    public LocalDateTime getResetPasswordTokenExpiry() {
+        return resetPasswordTokenExpiry;
+    }
+
+    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) {
+        this.resetPasswordTokenExpiry = resetPasswordTokenExpiry;
     }
 }

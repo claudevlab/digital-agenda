@@ -24,9 +24,12 @@ public class UsersRegistrationDTO {
     @NotBlank
     @Size(min = 8, message = "Password min 8 caratteri")
     private String password;
+/*  non serve piu'. il frontend non deve inviare il ruolo . deve essere il backend a validarlo
 
     @NotNull
     private Role role;
+
+ */
 
     @NotBlank
     @Size(max = 20)
@@ -62,14 +65,6 @@ public class UsersRegistrationDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 
     public String getPhoneNumber() {

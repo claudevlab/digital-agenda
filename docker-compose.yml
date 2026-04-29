@@ -1,18 +1,107 @@
-version: '3.8'
-
 services:
-  mysqldb:
+
+  # ─── DATABASE ────────────────────────────────────────
+  mysql:
     image: mysql:8.0
+    container_name: agenda-mysql
+    restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      
-  # Il "postino" per le email
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: agenda-rabbitmq
+      MYSQL_DATABASE: agenda_db
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "5672:5672"   # Porta per le app Java
-      - "15672:15672" # Dashboard Web (guest/guest)
+      - "3306:3306"           # esposto in locale per accesso da IntelliJ/Workbench
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema iniziale
     networks:
       - agenda-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── RABBITMQ ─────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: agenda-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"           # AMQP — usato dai servizi Spring
+      - "15672:15672"         # Management UI — http://localhost:15672
+    networks:
+      - agenda-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── BACKEND (monolita Spring Boot) ──────────────────
+  monolita:
+    build:
+      context: ./monolita
+      dockerfile: Dockerfile
+    container_name: agenda-monolita
+    restart: unless-stopped
+    env_file:
+      - .env                  # legge tutte le variabili dal file .env
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/agenda_db?serverTimezone=UTC
+      RABBITMQ_HOST: rabbitmq  # nome del servizio, non localhost!
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - agenda-network
+
+  # ─── NOTIFICATION SERVICE ────────────────────────────
+  email-service:
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: agenda-email-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "8081:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - agenda-network
+
+  # ─── FRONTEND (Angular + Nginx) ──────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: agenda-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"             # Angular gira su Nginx porta 80, esposto sul 4200
+    depends_on:
+      - monolita
+    networks:
+      - agenda-network
+
+# ─── VOLUMI ────────────────────────────────────────────
+volumes:
+  mysql_data:
+
+# ─── RETE INTERNA ──────────────────────────────────────
+networks:
+  agenda-network:
+    driver: bridge

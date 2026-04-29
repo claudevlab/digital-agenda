@@ -45,6 +45,7 @@ public class RabbitMQConfig {
     }
 
     // template configurato con il server JSON
+    @Bean
     public RabbitTemplate rabbitTemplate (ConnectionFactory connectionFactory) {
        RabbitTemplate template = new RabbitTemplate(connectionFactory);
        template.setMessageConverter(jsonmessageConverter());

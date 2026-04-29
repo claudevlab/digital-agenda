@@ -4,7 +4,8 @@ import com.claudev.agenda.entity.Schedule;
 import com.claudev.agenda.entity.User;
 import com.claudev.agenda.enums.DayOfWeek;
 import com.claudev.agenda.repository.ScheduleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Service
 public class ScheduleService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
 
     private final ScheduleRepository scheduleRepository;
 
@@ -23,8 +25,8 @@ public class ScheduleService {
     @Transactional
     public Schedule createSchedule (Schedule schedule,User user) {
         // validazione orario di fine < orario di fine
-        if (schedule.getStartTime().isAfter(schedule.getEndTime())) {
-            throw new IllegalArgumentException("L'orario di inizio deve essere precedente alla fine ");
+        if (!schedule.getStartTime().isBefore(schedule.getEndTime())) {
+            throw new IllegalArgumentException("L'orario di inizio deve essere strettamente precedente all'orario di fine.");
         }
 
         // controllo sovrapposizioni
@@ -43,20 +45,24 @@ public class ScheduleService {
         // associazione user
         schedule.setUser(user);
         Schedule saved = scheduleRepository.save(schedule);
-        System.out.println("Schedule salvato con ID : " + saved.getId());
+        logger.info("Schedule salvato con ID : {}" , saved.getId());
         return saved;
     }
 
-    // metodo per recuperare gli orari (potrebbe tornare utile)
+    // metodo per recuperare gli orari in base all'user professional
     public List<Schedule> getSchedulesByProfessional (User professional) {
         return scheduleRepository.findByUser(professional);
     }
 
 
     // da verificare (chiedi )`
-    public List<Schedule> findSchedules (User professional , DayOfWeek dayOfWeek) {
+    public List<Schedule> getScheduleByUserAndDayOfWeek (User professional , DayOfWeek dayOfWeek) {
         return scheduleRepository.findByUserAndDayOfWeek(professional, dayOfWeek);
     }
 
 
+    @Transactional
+    public void deleteSchedule(Long scheduleId) {
+        scheduleRepository.deleteById(scheduleId);
+    }
 }

@@ -1,0 +1,29 @@
+.register-container {
+  /* Assicura che il contenitore occupi tutta l'altezza della pagina */
+  min-height: 100vh;
+  /* Centra il contenuto sia orizzontalmente che verticalmente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Un leggero colore di sfondo (opzionale, ma sta molto bene) */
+  background-color: #f8f9fa;
+  padding: 2rem 1rem;
+}
+
+.register-card {
+  /* Blocca la larghezza massima a una dimensione elegante per un form */
+  max-width: 500px;
+  width: 100%;
+  
+  /* Stile della card */
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Aggiungiamo anche un piccolo tocco ai bottoni del tab per farli sembrare dei veri toggle */
+.role-tabs .btn {
+  flex: 1; /* Fa sì che i due bottoni siano larghi uguali */
+  border-radius: 8px;
+}

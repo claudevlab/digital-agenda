@@ -24,6 +24,10 @@ public interface AppointmentMapper {
     @Mapping(target = "professionalName", expression = "java(entity.getProfessional().getFirstName() + ' ' + entity.getProfessional().getLastName())")
     @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "customerName", expression = "java(entity.getCustomer().getFirstName() + ' ' + entity.getCustomer().getLastName())")
+    @Mapping(target = "customerEmail",source = "customer.email")
+    @Mapping(target = "customerPhone",source = "customer.phoneNumber")
+    @Mapping(target = "appointmentDate" ,source = "appointmentDateTime")
+    @Mapping(target = "appointmentStatus", source = "status")
     AppointmentResponseDTO toResponseDTO(Appointment entity);
 
 

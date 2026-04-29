@@ -18,6 +18,8 @@ public class AppointmentRequestDTO {
 
     private String notes;
 
+    private String reasonRejected;
+
     public LocalDateTime getAppointmentDateTime() {
         return appointmentDateTime;
     }
@@ -50,5 +52,12 @@ public class AppointmentRequestDTO {
         this.professionalId = professionalId;
     }
 
+    public String getReasonRejected() {
+        return reasonRejected;
+    }
+
+    public void setReasonRejected(String reasonRejected) {
+        this.reasonRejected = reasonRejected;
+    }
 }
 

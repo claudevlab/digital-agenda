@@ -12,9 +12,10 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 
+
 import java.io.IOException;
 
-// classe di spring che definisce le azini da compiere dopo che un utente si e' autentificato con successo
+// classe di spring che definisce le azioni da compiere dopo che un utente si e' autentificato con successo
 // Simple.. gestisce la navigazione post login
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -44,6 +45,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         // utilizziamo mapStruct
         User user = userService.processOAuthPostLogin(email,firstName,lastName);
+
 
         /*
         // cerchiamo l'utente nel DB o lo crea

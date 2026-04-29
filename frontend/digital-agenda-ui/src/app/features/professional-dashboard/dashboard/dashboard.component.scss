@@ -1,0 +1,206 @@
+// dashboard.component.scss
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  h2 { margin: 0; }
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+// STATS
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--primary-color);
+  
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-muted);
+  }
+  .stat-number {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-dark);
+  }
+}
+.stat-card--pending {
+  border-left: 4px solid #ffc107;
+  .stat-number { color: #ffc107; }
+}
+.stat-card--confirmed {
+  border-left: 4px solid #198754;
+  .stat-number { color: #198754; }
+}
+.appointments-section {
+  width: 100%;
+}
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  width: 100%;
+  h3 { margin-top: 0; }
+}
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+.slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: box-shadow 0.2s;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+}
+.slot-day strong {
+  font-size: 1rem;
+  color: var(--primary-color);
+  min-width: 110px;
+  display: inline-block;
+}
+.slot-time span {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.btn-danger-sm {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    background: var(--danger);
+    color: white;
+  }
+}
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed var(--border-color);
+}
+// SECTION HEADER
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.btn-refresh {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover {
+    background-color: #e9ecef;
+    color: #212529;
+  }
+}
+// APPOINTMENT LIST
+.appointment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  background: #ffffff;
+  transition: box-shadow 0.15s;
+  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
+  &.apt-pending   { border-left: 4px solid #ffc107; }
+  &.apt-confirmed { border-left: 4px solid #198754; }
+  &.apt-cancelled { border-left: 4px solid #dc3545; opacity: 0.7; }
+}
+.apt-client {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 160px;
+}
+.apt-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+// ===== STAT CARD INTERATTIVA =====
+.stat-card--active {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+
+  // evidenzia il bordo sinistro già colorato
+  &.stat-card--pending   { box-shadow: 0 6px 20px rgba(255,193,7,0.35) !important; }
+  &.stat-card--confirmed { box-shadow: 0 6px 20px rgba(25,135,84,0.35) !important; }
+}
+
+.stat-card--pending:hover,
+.stat-card--confirmed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.2s;
+}
+
+.stat-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: #adb5bd;
+  margin-top: 4px;
+}
+
+// ===== FILTER BADGE — accanto al titolo =====
+.filter-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 10px;
+  vertical-align: middle;
+
+  &--pending   { background: #fff3cd; color: #664d03; }
+  &--confirmed { background: #d1e7dd; color: #0a3622; }
+}
+
+.text-decoration-underline-hover:hover { text-decoration: underline; }

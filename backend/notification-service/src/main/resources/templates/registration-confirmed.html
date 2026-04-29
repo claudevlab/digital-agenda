@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; padding: 20px;">
+<div style="max-width:600px; margin:auto; background:white; border-radius:8px; overflow:hidden;">
+
+    <!-- Header con un colore blu per la registrazione -->
+    <div style="background:#0d6efd; padding:24px; text-align:center;">
+        <h1 style="color:white; margin:0;">🎉 Benvenuto a bordo!</h1>
+    </div>
+
+    <div style="padding:32px;">
+        <!-- Usiamo customerName come variabile per il nome dell'utente registrato -->
+        <p>Ciao <strong th:text="${customerName}">Nuovo Utente</strong>,</p>
+        <p>La tua registrazione su <strong>Agenda Digitale</strong> è andata a buon fine. Siamo felici di averti con noi!</p>
+
+        <div style="background:#f8f9fa; border-left:4px solid #0d6efd; padding:16px; margin:24px 0; border-radius:4px;">
+            <p style="margin:4px 0;">Il tuo account è stato attivato con successo. Ora puoi accedere alla piattaforma per iniziare a gestire i tuoi appuntamenti in modo semplice e veloce.</p>
+        </div>
+
+        <div style="text-align:center; margin:32px 0;">
+            <!-- Login URL dinamico preso da appUrl -->
+            <a th:href="${appUrl}"
+               style="background:#0d6efd; color:white; padding:12px 32px;
+               border-radius:6px; text-decoration:none; font-weight:bold;">
+                Accedi al tuo account
+            </a>
+        </div>
+
+        <p style="color:#555; font-size:14px; margin-top:20px;">Se non hai richiesto tu questa registrazione, puoi ignorare questa email.</p>
+    </div>
+
+    <div style="background:#f4f4f4; padding:16px; text-align:center;">
+        <small style="color:#888;">Digital Agenda — Sistema di prenotazioni automatico</small>
+    </div>
+</div>
+</body>
+</html>

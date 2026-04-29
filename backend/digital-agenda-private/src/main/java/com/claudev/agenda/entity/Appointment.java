@@ -45,6 +45,9 @@ public class Appointment {
     @Column(nullable = true)
     private LocalDateTime updatedAt;
 
+    @Column(nullable = true)
+    private String reasonRejected;
+
     public Long getId() {
         return id;
     }
@@ -115,6 +118,14 @@ public class Appointment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getReasonRejected() {
+        return reasonRejected;
+    }
+
+    public void setReasonRejected(String reasonRejected) {
+        this.reasonRejected = reasonRejected;
     }
 
     /*

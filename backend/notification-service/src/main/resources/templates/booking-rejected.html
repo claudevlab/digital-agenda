@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; padding: 20px;">
+<div style="max-width:600px; margin:auto; background:white; border-radius:8px; overflow:hidden;">
+
+    <!-- Nel tuo file booking-rejected.html -->
+    <div style="padding:32px;">
+        <p>Ciao <strong th:text="${customerName}">Cliente</strong>,</p>
+        <p>Purtroppo <strong th:text="${professionalName}">Professionista</strong> non ha potuto accettare la tua richiesta.</p>
+
+        <!--  NUOVO BLOCCO  Lo mostriamo solo se le note non sono vuote -->
+        <div th:if="${reasonRejected != null and !reasonRejected.isEmpty()}"
+             style="background: #fff3f3; border-left: 4px solid #dc3545; padding: 12px; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #dc3545; font-size: 14px;"><strong>Messaggio dal professionista:</strong></p>
+            <p style="margin: 8px 0 0 0; font-style: italic; color: #555;" th:text="${reasonRejected}"></p>
+        </div>
+
+        <p>Puoi prenotare un altro slot disponibile direttamente dalla tua agenda:</p>
+        <!-- ... resto del codice ... -->
+    </div>
+
+    <div style="background:#dc3545; padding:24px; text-align:center;">
+        <h1 style="color:white; margin:0;">❌ Appuntamento Non Accettato</h1>
+    </div>
+
+    <div style="padding:32px;">
+        <p>Ciao <strong th:text="${customerName}">Cliente</strong>,</p>
+        <p>Purtroppo <strong th:text="${professionalName}">Professionista</strong> non ha potuto accettare la tua richiesta.</p>
+        <p>Puoi prenotare un altro slot disponibile direttamente dalla tua agenda:</p>
+
+        <div style="text-align:center; margin:32px 0;">
+            <a th:href="${appUrl}" style="background:#dc3545; color:white; padding:12px 32px;
+           border-radius:6px; text-decoration:none; font-weight:bold;">
+                Prenota un nuovo slot
+            </a>
+        </div>
+    </div>
+
+    <div style="background:#f4f4f4; padding:16px; text-align:center;">
+        <small style="color:#888;">Digital Agenda — Sistema di prenotazioni automatico</small>
+    </div>
+</div>
+</body>
+</html>

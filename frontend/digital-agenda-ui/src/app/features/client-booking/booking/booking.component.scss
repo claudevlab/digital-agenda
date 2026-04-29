@@ -1,0 +1,464 @@
+// ===== STATS GRID APPUNTAMENTI =====
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-left: 4px solid #0d6efd;
+  transition: all 0.2s;
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #6c757d;
+  }
+
+  .stat-number {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #212529;
+  }
+}
+
+.stat-card--upcoming {
+  border-left: 4px solid #198754;
+  .stat-number { color: #198754; }
+}
+
+.stat-card--past {
+  border-left: 4px solid #6c757d;
+  .stat-number { color: #6c757d; }
+}
+
+.stat-card--active-upcoming {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(25,135,84,0.25) !important;
+  background: #f0faf4;
+}
+
+.stat-card--active-past {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(108,117,125,0.2) !important;
+  background: #f8f9fa;
+}
+
+.stat-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: #adb5bd;
+  margin-top: 4px;
+}
+
+// ===== CARD SEZIONE =====
+.card-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+// ===== APPOINTMENT LIST =====
+.appointment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  background: #ffffff;
+  transition: box-shadow 0.15s;
+  flex-wrap: wrap;
+
+  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
+  &.apt-pending   { border-left: 4px solid #ffc107; }
+  &.apt-confirmed { border-left: 4px solid #198754; }
+  &.apt-cancelled { border-left: 4px solid #dc3545; opacity: 0.7; }
+}
+
+.apt-client {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 160px;
+}
+
+.apt-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.apt-datetime {
+  min-width: 160px;
+  font-size: 0.88rem;
+}
+
+.apt-notes {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+.apt-status { min-width: 90px; }
+
+.apt-actions { margin-left: auto; }
+
+// ===== BADGE STATO =====
+.apt-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.badge-pending   { background: #fff3cd; color: #664d03; }
+  &.badge-confirmed { background: #d1e7dd; color: #0a3622; }
+  &.badge-cancelled { background: #f8d7da; color: #842029; }
+}
+
+// ===== FILTER BADGE =====
+.filter-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 10px;
+  vertical-align: middle;
+
+  &--upcoming { background: #d1e7dd; color: #0a3622; }
+  &--past     { background: #e9ecef; color: #495057; }
+}
+
+// ===== PULSANTI AZIONE =====
+.btn-confirm {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: #157347; }
+}
+
+.btn-reject {
+  background: transparent;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 0.3rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: #dc3545; color: white; }
+}
+
+// ===== EMPTY STATE =====
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+// ===== STEPPER =====
+.stepper {
+  .step-badge {
+    background-color: #e9ecef;
+    color: #6c757d;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    &.active {
+      background-color: #0d6efd;
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
+
+  .step-arrow {
+    color: #adb5bd;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+}
+
+// ===== CARD PROFESSIONISTA =====
+.professional-card {
+  cursor: pointer;
+  border: 2px solid #0d6efd !important;
+  border-radius: 14px !important;
+  transition: all 0.2s ease;
+  background-color: #ffffff !important;
+  color: #212529 !important;
+
+  .card-body {
+    background-color: #ffffff !important;
+    border-radius: 12px 12px 0 0;
+    padding: 16px !important;
+    text-align: center;
+  }
+
+  h6 {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: #0d6efd !important;
+    margin-bottom: 2px !important;
+  }
+
+  small {
+    color: #6c757d !important;
+    font-style: italic;
+    font-size: 0.78rem !important;
+    display: block;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  ul {
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto 8px auto;
+    padding-left: 16px;
+
+    li {
+      color: #495057 !important;
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+  }
+
+  .badge {
+    background-color: #e8f0fe !important;
+    color: #0d6efd !important;
+    border: 1px solid #b6d0fb !important;
+    font-size: 0.72rem;
+  }
+
+  &:hover {
+    background-color: #f0f5ff !important;
+    border-color: #0b5ed7 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(13,110,253,0.2) !important;
+    .card-body   { background-color: #f0f5ff !important; }
+    .card-footer { background-color: #e8f0fe !important; }
+  }
+
+  .card-footer {
+    background-color: #f8f9ff !important;
+    border-top: 1px solid #dee8fd !important;
+    border-radius: 0 0 12px 12px !important;
+    padding: 8px !important;
+    text-align: center;
+
+    span {
+      color: #0d6efd !important;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+  }
+}
+
+// ===== AVATAR =====
+.avatar-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+
+
+// ===== SLOT ORARI =====
+.slot-btn {
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+  background-color: #fff3cd;
+  border: 2px solid #ffc107;
+  color: #664d03;
+
+  &:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,193,7,0.4);
+  }
+
+  &.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(25,135,84,0.35);
+  }
+
+  &.btn-outline-success {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #664d03;
+    &:hover { background-color: #ffc107; color: #000; }
+  }
+}
+
+// ===== STAT CARD NEW =====
+.stat-card--new {
+  border-left: 4px solid #0d6efd;
+
+  .stat-number { color: #0d6efd; font-size: 2.5rem; }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(13,110,253,0.25) !important;
+    background: #e8f0fe;
+  }
+}
+
+// ===== DASHBOARD HEADER =====
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  h4 { margin: 0; }
+}
+
+.btn-refresh {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { background-color: #e9ecef; color: #212529; }
+}
+
+// ===== STEP 2 — Banner professionista selezionato =====
+.selected-prof-banner {
+  display: flex;
+  align-items: center;
+  background: #f0f5ff;
+  border: 1px solid #b6d0fb;
+  border-left: 4px solid #0d6efd;
+  border-radius: 12px;
+  padding: 16px 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .apt-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+}
+
+.btn-back-link {
+  background: none;
+  border: 1px solid #b6d0fb;
+  border-radius: 8px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.82rem;
+  color: #0d6efd;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+
+  &:hover {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+}
+
+// ===== BOOKING CARD (contenitore sezioni) =====
+.booking-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.booking-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.booking-date-input {
+  border: 2px solid #b6d0fb !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  color: #212529;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.15) !important;
+  }
+}
+
+.booking-select {
+  border: 2px solid #b6d0fb !important;
+  border-radius: 8px !important;
+  font-size: 0.88rem;
+
+  &:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.15) !important;
+  }
+}

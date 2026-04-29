@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="font-family: Arial, sans-serif; background:#f4f4f4; padding: 20px;">
+<div style="max-width:600px; margin:auto; background:white; border-radius:8px; overflow:hidden;">
+
+    <div style="background:#198754; padding:24px; text-align:center;">
+        <h1 style="color:white; margin:0;">✅ Appuntamento Confermato</h1>
+    </div>
+
+    <div style="padding:32px;">
+        <p>Ciao <strong th:text="${customerName}">Cliente</strong>,</p>
+        <p>Il tuo appuntamento con <strong th:text="${professionalName}">Professionista</strong> è stato <strong style="color:#198754;">confermato</strong>!</p>
+
+        <div style="background:#f8f9fa; border-left:4px solid #198754; padding:16px; margin:24px 0; border-radius:4px;">
+            <p style="margin:4px 0;">📆 <strong>Data e ora:</strong> <span th:text="${appointmentDateTime}"></span></p>
+            <p style="margin:4px 0;">⏱ <strong>Durata:</strong> <span th:text="${durationMinutes}"></span> minuti</p>
+        </div>
+
+        <div style="text-align:center; margin:32px 0;">
+            <a th:href="${appUrl}" style="background:#198754; color:white; padding:12px 32px;
+           border-radius:6px; text-decoration:none; font-weight:bold;">
+                I miei appuntamenti
+            </a>
+        </div>
+    </div>
+
+    <div style="background:#f4f4f4; padding:16px; text-align:center;">
+        <small style="color:#888;">Digital Agenda — Sistema di prenotazioni automatico</small>
+    </div>
+</div>
+</body>
+</html>

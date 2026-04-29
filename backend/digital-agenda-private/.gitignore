@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+
 ### STS ###
 .apt_generated
 .classpath
@@ -19,15 +20,17 @@ target/
 *.iml
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+
 
 ### VS Code ###
 .vscode/
+digital-agenda-ui/dist/
+digital-agenda-ui/node_modules/
+
+
+# Variabili d'ambiente 
+.env
+*.env.local
+
+# Certificati SSL generati da Traefik
+traefik/acme.json
