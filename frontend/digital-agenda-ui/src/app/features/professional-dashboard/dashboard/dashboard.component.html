@@ -1,0 +1,296 @@
+<div class="dashboard-header">
+  <h2>La tua Agenda</h2>
+  <button class="btn-primary" (click)="openModal()">+ Nuovo Slot</button>
+</div>
+
+<!-- STATS — card cliccabili -->
+<div class="stats-grid">
+
+  <div class="stat-card">
+    <h3>Slot Configurati</h3>
+    <p class="stat-number">{{ totalSchedules() }}</p>
+  </div>
+
+  <!--  cliccabile — filtra PENDING -->
+  <div class="stat-card stat-card--pending" [class.stat-card--active]="activeFilter === 'PENDING'"
+    (click)="setFilter('PENDING')" style="cursor:pointer">
+    <h3>In Attesa</h3>
+    <p class="stat-number">{{ pendingCount() }}</p>
+    <small class="stat-hint">
+      {{ activeFilter === 'PENDING' ? '✕ Mostra tutti' : 'Clicca per filtrare' }}
+    </small>
+  </div>
+
+  <!--  cliccabile — filtra CONFIRMED -->
+  <div class="stat-card stat-card--confirmed" [class.stat-card--active]="activeFilter === 'CONFIRMED'"
+    (click)="setFilter('CONFIRMED')" style="cursor:pointer">
+    <h3>Confermati</h3>
+    <p class="stat-number">{{ confirmedCount() }}</p>
+    <small class="stat-hint">
+      {{ activeFilter === 'CONFIRMED' ? '✕ Mostra tutti' : 'Clicca per filtrare' }}
+    </small>
+  </div>
+
+</div>
+
+
+
+
+<!-- APPUNTAMENTI RICEVUTI -->
+<div class="appointments-section mt-3">
+  <div class="card">
+    <div class="section-header">
+
+      <h3>
+        Appuntamenti Ricevuti
+        <!-- ✅ titolo dinamico in base al filtro attivo -->
+        @if (activeFilter === 'PENDING') {
+        <span class="filter-badge filter-badge--pending">In Attesa</span>
+        }
+        @if (activeFilter === 'CONFIRMED') {
+        <span class="filter-badge filter-badge--confirmed">Confermati</span>
+        }
+      </h3>
+
+      <button class="btn-refresh" (click)="loadAppointments()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Aggiorna
+      </button>
+    </div>
+
+    @if (appointmentError()) {
+    <div class="alert-danger">{{ appointmentError() }}</div>
+    }
+    @if (isLoadingAppointments()) {
+    <div class="empty-state">
+      <p>Caricamento appuntamenti...</p>
+    </div>
+    }
+
+    <!-- ✅ usa filteredAppointments invece di appointments() -->
+    @if (!isLoadingAppointments() && filteredAppointments.length === 0) {
+    <div class="empty-state">
+      <p>Nessun appuntamento
+        {{ activeFilter === 'PENDING' ? 'in attesa' : activeFilter === 'CONFIRMED' ? 'confermato' : 'ricevuto' }}
+        al momento.
+      </p>
+    </div>
+    }
+
+    @if (!isLoadingAppointments() && filteredAppointments.length > 0) {
+    <div class="appointment-list">
+      @for (apt of filteredAppointments; track apt.id) {
+      <div class="appointment-item" [class.apt-pending]="apt.appointmentStatus === 'PENDING'"
+        [class.apt-confirmed]="apt.appointmentStatus === 'CONFIRMED'"
+        [class.apt-cancelled]="apt.appointmentStatus === 'CANCELLED'"
+        [class.apt-rejected]="apt.appointmentStatus === 'REJECTED'">
+
+        <div class="apt-client" (click)="openCustomerModal(apt)" style="cursor: pointer;"
+          title="Visualizza contatti cliente">
+          <div class="apt-avatar bg-primary text-white">
+            {{ apt.customerName.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <!-- effetto hover sul nome (opzionale ma carino) -->
+            <strong class="text-primary text-decoration-underline-hover">{{ apt.customerName }}</strong>
+            <small class="d-block text-muted">Cliente</small>
+          </div>
+        </div>
+
+        <div class="apt-datetime">
+          <i class="bi bi-calendar-event me-1"></i>
+          {{ formatDateTime(apt.appointmentDate) }}
+          <small class="d-block text-muted">{{ apt.durationMinutes }} min</small>
+        </div>
+
+        <div class="apt-notes">
+          @if (apt.notes) {
+          <span><i class="bi bi-chat-left-text me-1"></i>{{ apt.notes }}</span>
+          } @else {
+          <span class="text-muted">—</span>
+          }
+        </div>
+
+        <div class="apt-status">
+          <span [class]="'apt-badge ' + getStatusClass(apt.appointmentStatus)">
+            {{ getStatusLabel(apt.appointmentStatus) }}
+          </span>
+        </div>
+
+        <div class="apt-actions">
+          @if (apt.appointmentStatus === 'PENDING') {
+          <button class="btn-confirm" (click)="confirmAppointment(apt.id)">
+            <i class="bi bi-check-lg me-1"></i>Conferma
+          </button>
+          <button class="btn-reject" (click)="openRejectModal(apt.id)">
+            <i class="bi bi-x-lg me-1"></i>Rifiuta
+          </button>
+          }
+          @if (apt.appointmentStatus === 'CONFIRMED') {
+          <span class="text-success small fw-semibold">
+            <i class="bi bi-check-circle me-1"></i>Confermato
+          </span>
+          }
+          @if (apt.appointmentStatus === 'REJECTED') {
+          <span class="text-danger small fw-semibold">
+            <i class="bi bi-x-circle me-1"></i>Rifiutato
+          </span>
+          }
+        </div>
+
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+
+<!-- SLOT SETTIMANALI -->
+<div class="appointments-section mt-3">
+  <div class="card">
+    <h3>I tuoi Slot Settimanali</h3>
+
+    @if (isLoading()) {
+    <div class="empty-state">
+      <p>Caricamento in corso...</p>
+    </div>
+    }
+    @if (errorMessage()) {
+    <div class="alert-danger">{{ errorMessage() }}</div>
+    }
+    @if (!isLoading() && schedules().length > 0) {
+    <div class="slots-list">
+      @for (schedule of schedules(); track schedule.id) {
+      <div class="slot-item">
+        <div class="slot-day">
+          <strong>{{ dayLabels[schedule.dayOfWeek] }}</strong>
+        </div>
+        <div class="slot-time">
+          <span>{{ schedule.startTime }} - {{ schedule.endTime }}</span>
+        </div>
+        <div class="slot-actions">
+          <button class="btn-danger-sm" (click)="deleteSchedule(schedule.id)">
+            Elimina
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+    @if (!isLoading() && schedules().length === 0 && !errorMessage()) {
+    <div class="empty-state">
+      <p>Non hai ancora creato nessuno slot. Clicca su "+ Nuovo Slot" per iniziare!</p>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- MODALE -->
+@if (isModalOpen()) {
+<app-schedule-modal (scheduleCreated)="onScheduleCreated()" (closeModal)="closeModal()">
+</app-schedule-modal>
+}
+
+<!-- CALENDARIO -->
+<div class="mt-3">
+  <app-schedule-calendar></app-schedule-calendar>
+</div>
+
+<!-- Modal Rifiuto (Si apre in base al signal showRejectModal()) -->
+<div *ngIf="showRejectModal()" class="modal-backdrop"
+  style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1050; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-content" style="background: white; padding: 24px; border-radius: 8px; width: 450px;">
+
+    <h5 class="mb-3 text-danger">
+      <i class="bi bi-x-circle me-2"></i>Rifiuta Appuntamento
+    </h5>
+
+    <p class="text-muted mb-3">Se lo desideri, puoi indicare un motivo per il rifiuto (verrà inviato al cliente).</p>
+
+    <!-- Quando digita, aggiorna il signal -->
+    <textarea class="form-control mb-4" rows="3" placeholder="Es: Imprevisto, per favore prenota in un altro orario..."
+      [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"></textarea>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button class="btn btn-outline-secondary" (click)="closeRejectModal()">Annulla</button>
+      <button class="btn btn-danger" (click)="confirmReject()">Conferma Rifiuto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Info Cliente -->
+<!-- Modal Info Cliente (Design Migliorato) -->
+<div *ngIf="showCustomerModal()" class="modal-backdrop" style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1050; display: flex; align-items: center; justify-content: center;">
+  <div class="modal-content border-0" style="background: white; padding: 32px; border-radius: 12px; width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+    
+    <!-- Header Modale -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="mb-0 text-primary fw-bold">
+        <i class="bi bi-person-vcard me-2"></i>Scheda Cliente
+      </h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="closeCustomerModal()"></button>
+    </div>
+    
+    @if (selectedCustomer()) {
+      <!-- Sezione Profilo (Avatar e Nome) -->
+      <div class="text-center mb-4 pb-3 border-bottom">
+        <div class="mx-auto mb-3 text-white d-flex align-items-center justify-content-center shadow-sm" 
+             style="width: 72px; height: 72px; font-size: 28px; border-radius: 50%; background: linear-gradient(135deg, #0d6efd, #0dcaf0);">
+          {{ selectedCustomer()!.name.charAt(0).toUpperCase() }}
+        </div>
+        <h4 class="mb-1 fw-bold text-dark">{{ selectedCustomer()!.name }}</h4>
+        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill">Cliente Registrato</span>
+      </div>
+
+      <!-- Sezione Contatti (Rettangoli colorati) -->
+      <div class="d-flex flex-column gap-3 mb-4">
+        
+        <!-- Box Telefono -->
+        <div class="d-flex align-items-center p-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+            <i class="bi bi-telephone-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Telefono</small>
+            <div class="mt-1">
+              @if (selectedCustomer()!.phone) {
+                <a [href]="'tel:' + selectedCustomer()!.phone" class="text-decoration-none fw-bold fs-5" style="color: #2b3035;">
+                  {{ selectedCustomer()!.phone }}
+                </a>
+              } @else {
+                <span class="text-muted fst-italic">Non specificato</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Box Email -->
+        <div class="d-flex align-items-center p-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+            <i class="bi bi-envelope-fill"></i>
+          </div>
+          <div class="flex-grow-1 overflow-hidden">
+            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Email</small>
+            <div class="mt-1 text-truncate">
+              @if (selectedCustomer()!.email) {
+                <a [href]="'mailto:' + selectedCustomer()!.email" class="text-decoration-none fw-bold text-primary">
+                  {{ selectedCustomer()!.email }}
+                </a>
+              } @else {
+                <span class="text-muted fst-italic">Non specificata</span>
+              }
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <br>
+      
+      <!-- Footer Modale -->
+      <div class="d-grid mt-2">
+        <button class="btn btn-secondary py-2 fw-semibold rounded-3" (click)="closeCustomerModal()">
+          Chiudi Scheda
+        </button>
+      </div>
+    }
+  </div>
+</div>

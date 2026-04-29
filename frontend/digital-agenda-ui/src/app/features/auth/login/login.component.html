@@ -1,0 +1,98 @@
+<!-- src/app/features/auth/login/login.component.html -->
+<div class="login-container">
+  <div class="login-card">
+    
+    <div class="text-center">
+      <h2>Agenda Digitale</h2>
+      <p>Accedi al tuo account</p>
+    </div>
+
+    <!-- Mostra errore dal server se presente -->
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Campo Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          id="email" 
+          type="email" 
+          formControlName="email" 
+          placeholder="es. mario.rossi@email.com"
+          [class.is-invalid]="f.email.invalid && f.email.touched"
+        >
+        <!-- Messaggi di errore Email -->
+        @if (f.email.invalid && f.email.touched) {
+          <div class="error-text">
+            @if (f.email.errors?.['required']) { <span>L'email è obbligatoria.</span> }
+            @if (f.email.errors?.['email']) { <span>Formato email non valido.</span> }
+          </div>
+        }
+      </div>
+
+      <!-- Campo Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          id="password" 
+          type="password" 
+          formControlName="password" 
+          placeholder="Inserisci la password"
+          [class.is-invalid]="f.password.invalid && f.password.touched"
+        >
+        <!-- Messaggi di errore Password -->
+        @if (f.password.invalid && f.password.touched) {
+          <div class="error-text">
+            @if (f.password.errors?.['required']) { <span>La password è obbligatoria.</span> }
+            @if (f.password.errors?.['minlength']) { <span>Minimo 6 caratteri.</span> }
+          </div>
+        }
+      </div>
+      
+
+<!-- Sotto l'input della password nel login -->
+<div class="text-end mt-1">
+  
+  <a routerLink="/forgot-password" style="font-size: 0.9rem; text-decoration: none;">Hai dimenticato la password?</a>
+</div>
+
+<br>
+
+      <!-- Bottone Submit -->
+      <button type="submit" [disabled]="isLoading()" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm">
+        @if (isLoading()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span>Accesso in corso...</span>
+        } @else {
+          <span>Accedi</span>
+        }
+      </button>
+      <br>
+      
+<!-- Sezione per il login con Google -->
+      <div class="text-center mt-3 mb-3">
+  <p class="text-muted">Oppure</p>
+  <!-- NOTA: href normale, non routerLink, perché usciamo dall'app Angular! -->
+  <a href="http://localhost:8080/oauth2/authorization/google" class="btn btn-outline-danger w-100">
+    <i class="fab fa-google me-2"></i> Accedi con Google
+  </a>
+</div>
+<br>
+      <!-- Sezione per la registrazione -->
+      <div class="mt-4 text-center border-top pt-3">
+        <p class="mb-0 text-muted small">Non hai ancora un account?</p>
+        <!-- routerLink reindirizza al nuovo componente che creeremo -->
+        <a routerLink="/register" class="text-decoration-none fw-bold ms-1">
+          Registrati qui
+        </a>
+      </div>
+
+    </form>
+    
+  </div>
+</div>

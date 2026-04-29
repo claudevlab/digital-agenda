@@ -1,0 +1,86 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <h3 class="fw-bold">Il tuo Profilo</h3>
+            <p class="text-muted">Mantieni aggiornati i tuoi dati e le tue preferenze di lavoro.</p>
+          </div>
+
+                    <!-- Messaggi di successo o errore -->
+          @if (errorMessage()) {
+            <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; padding: 12px 16px; border-radius: 8px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center;">
+              <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.2rem;"></i>
+              {{ errorMessage() }}
+            </div>
+          }
+          
+          @if (successMessage()) {
+            <div style="background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; padding: 12px 16px; border-radius: 8px; font-weight: 500; margin-bottom: 20px; display: flex; align-items: center;">
+              <i class="bi bi-check-circle-fill me-2" style="font-size: 1.2rem;"></i>
+              {{ successMessage() }}
+            </div>
+          }
+
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Professione -->
+            <div class="mb-3">
+              <label for="jobTitle" class="form-label">Professione <span class="text-danger">*</span></label>
+              <input id="jobTitle" type="text" formControlName="jobTitle" class="form-control"
+                     placeholder="Es. Elettricista, Avvocato..."
+                     [class.is-invalid]="profileForm.get('jobTitle')?.invalid && profileForm.get('jobTitle')?.touched">
+              @if (profileForm.get('jobTitle')?.invalid && profileForm.get('jobTitle')?.touched) {
+                <div class="invalid-feedback">La professione è obbligatoria.</div>
+              }
+            </div>
+
+            <!-- Partita IVA (Ora opzionale!) -->
+            <div class="mb-3">
+              <label for="vatRegistrationNumber" class="form-label">Partita IVA <span class="text-muted small">(Opzionale)</span></label>
+              <input id="vatRegistrationNumber" type="text" formControlName="vatRegistrationNumber" class="form-control"
+                     placeholder="Inserisci la tua P.IVA">
+            </div>
+
+            <!-- Telefono -->
+            <div class="mb-4">
+              <label for="phoneNumber" class="form-label">Numero di Telefono <span class="text-danger">*</span></label>
+              <input id="phoneNumber" type="text" formControlName="phoneNumber" class="form-control"
+                     [class.is-invalid]="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+            </div>
+
+            <!-- Modalità di Lavoro -->
+            <div class="card bg-light border-0 mb-4">
+              <div class="card-body">
+                <h6 class="card-subtitle mb-3 text-muted">Modalità di Lavoro</h6>
+                
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="remote" formControlName="remote">
+                  <label class="form-check-label" for="remote">Offro consulenze da remoto (Online)</label>
+                </div>
+                
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="onSite" formControlName="onSite">
+                  <label class="form-check-label" for="onSite">Ricevo i clienti in studio / a domicilio (On-Site)</label>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" [disabled]="isLoading() || profileForm.invalid">
+              @if (isLoading()) {
+                <span class="spinner-border spinner-border-sm me-2"></span> Salvataggio in corso...
+              } @else {
+                Salva Modifiche
+              }
+            </button>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>Nuovo Slot</h3>
+      <button class="btn-close" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      @if (errorMessage()) {
+        <div class="alert-danger">{{ errorMessage() }}</div>
+      }
+
+      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
+
+        <!-- Giorno -->
+        <div class="form-group">
+          <label for="dayOfWeek">Giorno della settimana</label>
+          <select
+            id="dayOfWeek"
+            formControlName="dayOfWeek"
+            [class.is-invalid]="f.dayOfWeek.invalid && f.dayOfWeek.touched">
+            <option value="" disabled>Seleziona un giorno</option>
+            @for (day of days; track day.value) {
+              <option [value]="day.value">{{ day.label }}</option>
+            }
+          </select>
+          @if (f.dayOfWeek.invalid && f.dayOfWeek.touched) {
+            <span class="error-text">Il giorno è obbligatorio.</span>
+          }
+        </div>
+
+        <!-- Orario inizio -->
+        <div class="form-group">
+          <label for="startTime">Orario inizio</label>
+          <input
+            id="startTime"
+            type="time"
+            formControlName="startTime"
+            [class.is-invalid]="f.startTime.invalid && f.startTime.touched">
+          @if (f.startTime.invalid && f.startTime.touched) {
+            <span class="error-text">L'orario di inizio è obbligatorio.</span>
+          }
+        </div>
+
+        <!-- Orario fine -->
+        <div class="form-group">
+          <label for="endTime">Orario fine</label>
+          <input
+            id="endTime"
+            type="time"
+            formControlName="endTime"
+            [class.is-invalid]="f.endTime.invalid && f.endTime.touched">
+          @if (f.endTime.invalid && f.endTime.touched) {
+            <span class="error-text">L'orario di fine è obbligatorio.</span>
+          }
+        </div>
+
+        <!-- Descrizione opzionale -->
+        <div class="form-group">
+          <label for="description">Descrizione (opzionale)</label>
+          <input
+            id="description"
+            type="text"
+            formControlName="description"
+            placeholder="es. Visita medica, Consulenza...">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="onClose()">
+            Annulla
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span>Salvataggio...</span>
+            } @else {
+              <span>Salva Slot</span>
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

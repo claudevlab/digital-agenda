@@ -1,0 +1,146 @@
+<div class="register-container">
+  <div class="register-card">
+    
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">Crea il tuo Account</h2>
+      <p class="text-muted">Scegli come vuoi registrarti</p>
+    </div>
+
+    <!-- TAB SWITCHER -->
+    <div class="role-tabs mb-4 d-flex justify-content-center gap-2">
+      <button 
+        type="button" 
+        class="btn" 
+        [class.btn-primary]="selectedRole() === 'CLIENT'"
+        [class.btn-outline-primary]="selectedRole() !== 'CLIENT'"
+        (click)="switchRole('CLIENT')">
+        <i class="bi bi-person me-2"></i>Sono un Cliente
+      </button>
+      <button 
+        type="button" 
+        class="btn" 
+        [class.btn-primary]="selectedRole() === 'PROFESSIONAL'"
+        [class.btn-outline-primary]="selectedRole() !== 'PROFESSIONAL'"
+        (click)="switchRole('PROFESSIONAL')">
+        <i class="bi bi-briefcase me-2"></i>Professionista
+      </button>
+    </div>
+
+
+    <!-- MESSAGGI SERVER -->
+    @if (errorMessage()) {
+      <div class="alert alert-danger">{{ errorMessage() }}</div>
+    }
+    @if (successMessage()) {
+      <div class="alert alert-success">{{ successMessage() }}</div>
+    }
+
+    <br>
+       <!-- Bottone Registrati con Google -->
+      <div class="text-center mt-3 mb-4">
+        <p class="text-muted small">Oppure registrati rapidamente</p>
+        <a href="http://localhost:8080/oauth2/authorization/google" class="btn btn-outline-danger w-100 shadow-sm">
+          <i class="fab fa-google me-2"></i> Registrati con Google
+        </a>
+      </div>
+
+      <br>
+
+      <!-- SUBMIT NORMALE -->
+      <button type="submit" class="btn btn-primary w-100 mt-2" [disabled]="isLoading() || successMessage() !== ''">
+         <i class="bi bi-check me-2"></i> Registrati
+      </button>
+
+<br>
+
+    <!-- FORM DI REGISTRAZIONE -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      
+      <div class="row">
+        <!-- Nome -->
+        <div class="form-group col-md-6 mb-3">
+          <label for="firstName" class="form-label small fw-semibold text-muted">Nome</label>
+          <input id="firstName" type="text" formControlName="firstName" class="form-control form-control-lg"
+                 [class.is-invalid]="f['firstName'].invalid && f['firstName'].touched">
+        </div>
+
+        <!-- Cognome -->
+        <div class="form-group col-md-6 mb-3">
+          <label for="lastName" class="form-label small fw-semibold text-muted">Cognome</label>
+          <input id="lastName" type="text" formControlName="lastName" class="form-control form-control-lg"
+                 [class.is-invalid]="f['lastName'].invalid && f['lastName'].touched">
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group mb-3">
+        <label for="email" class="form-label small fw-semibold text-muted">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-control form-control-lg"
+               [class.is-invalid]="f['email'].invalid && f['email'].touched">
+      </div>
+
+      <!-- Password -->
+      <div class="form-group mb-3">
+        <label for="password" class="form-label small fw-semibold text-muted">Password</label>
+        <input id="password" type="password" formControlName="password" class="form-control form-control-lg"
+               [class.is-invalid]="f['password'].invalid && f['password'].touched">
+        @if (f['password'].invalid && f['password'].touched && f['password'].errors?.['minlength']) {
+          <small class="text-danger mt-1 d-block">La password deve avere almeno 8 caratteri.</small>
+        }
+      </div>
+
+      <!-- Telefono -->
+      <div class="form-group mb-3">
+        <label for="phoneNumber" class="form-label small fw-semibold text-muted">Numero di Telefono</label>
+        <input id="phoneNumber" type="text" formControlName="phoneNumber" class="form-control form-control-lg"
+               [class.is-invalid]="f['phoneNumber'].invalid && f['phoneNumber'].touched">
+      </div>
+
+      <!-- CAMPI SPECIFICI PER PROFESSIONISTA -->
+      @if (selectedRole() === 'PROFESSIONAL') {
+        <div class="professional-fields mt-4 p-4 border rounded-3 bg-light">
+          <h5 class="mb-3 fs-6 fw-bold text-primary">Dati Professionali</h5>
+          
+          <!-- Titolo Lavoro -->
+          <div class="form-group mb-3">
+            <label for="jobTitle" class="form-label small fw-semibold text-muted">Professione (Es. Avvocato, Medico)</label>
+            <input id="jobTitle" type="text" formControlName="jobTitle" class="form-control"
+                   [class.is-invalid]="f['jobTitle'].invalid && f['jobTitle'].touched">
+          </div>
+
+          <!-- Partita IVA -->
+          <div class="form-group mb-3">
+            <label for="vatRegistrationNumber" class="form-label small fw-semibold text-muted">Partita IVA</label>
+            <input id="vatRegistrationNumber" type="text" formControlName="vatRegistrationNumber" class="form-control"
+                   [class.is-invalid]="f['vatRegistrationNumber'].invalid && f['vatRegistrationNumber'].touched">
+          </div>
+
+          <!-- Modalità di Lavoro -->
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="remote" formControlName="remote">
+            <label class="form-check-label text-muted" for="remote">Offro consulenze da remoto (Online)</label>
+          </div>
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="onSite" formControlName="onSite">
+            <label class="form-check-label text-muted" for="onSite">Ricevo in studio (On-Site)</label>
+          </div>
+        </div>
+      }
+
+      <!-- SUBMIT -->
+      <button type="submit" class="btn btn-primary btn-lg w-100 mt-4 shadow-sm" [disabled]="isLoading() || successMessage() !== ''">
+        @if (isLoading()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span>Registrazione in corso...</span>
+        } @else {
+          <span>Registrati come {{ selectedRole() === 'CLIENT' ? 'Cliente' : 'Professionista' }}</span>
+        }
+      </button>
+
+      <div class="mt-4 text-center">
+        <p class="mb-0 text-muted small">Hai già un account? <a routerLink="/login" class="text-decoration-none fw-bold">Accedi qui</a></p>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+.footer-divider {
+  border: 0;
+  height: 1px;
+  /* Una linea con sfumatura ai lati per un look moderno */
+  background-image: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.15), rgba(0,0,0,0));
+  opacity: 1;
+}
+
+.brand-text {
+  /* Riprendiamo i colori del logo */
+  background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Arial Black', sans-serif; /* Usa un font simile al logo */
+  letter-spacing: 2px;
+}

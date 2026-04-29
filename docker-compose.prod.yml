@@ -1,0 +1,15 @@
+# docker-compose.prod.yml
+# Override per produzione — da completare prima del deploy su VPS
+#
+# Utilizzo: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Differenze rispetto al locale:
+#   - Nessuna porta esposta direttamente (tutto passa per Traefik)
+#   - Traefik come reverse proxy con SSL automatico
+#   - Nessun volume di schema SQL (DB già inizializzato)
+#   - DDL_AUTO=validate invece di update
+
+services:
+  # TODO: aggiungere configurazione Traefik
+  # TODO: rimuovere porte esposte (gestite da Traefik)
+  # TODO: configurare SSL con acme.json

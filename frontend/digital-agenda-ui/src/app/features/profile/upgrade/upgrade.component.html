@@ -1,0 +1,84 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <h3 class="fw-bold">Diventa Professionista</h3>
+            <p class="text-muted">Completa il tuo profilo per iniziare a ricevere prenotazioni.</p>
+          </div>
+
+          @if (errorMessage()) {
+            <div class="alert alert-danger">{{ errorMessage() }}</div>
+          }
+          @if (successMessage()) {
+            <div class="alert alert-success">
+              {{ successMessage() }}
+              <br><small>Verrai reindirizzato al login tra pochi secondi...</small>
+            </div>
+          }
+
+          @if (!successMessage()) {
+            <form [formGroup]="upgradeForm" (ngSubmit)="onSubmit()">
+              
+              <!-- Professione -->
+              <div class="mb-3">
+                <label for="jobTitle" class="form-label">Professione <span class="text-danger">*</span></label>
+                <input id="jobTitle" type="text" formControlName="jobTitle" class="form-control"
+                       placeholder="Es. Avvocato, Medico, Consulente"
+                       [class.is-invalid]="f.jobTitle.invalid && f.jobTitle.touched">
+              </div>
+
+              <!-- Partita IVA -->
+              <div class="mb-3">
+                <label for="vatRegistrationNumber" class="form-label">Partita IVA <span class="text-danger">*</span></label>
+                <input id="vatRegistrationNumber" type="text" formControlName="vatRegistrationNumber" class="form-control"
+                       placeholder="Inserisci le 11 cifre della tua P.IVA"
+                       [class.is-invalid]="f.vatRegistrationNumber.invalid && f.vatRegistrationNumber.touched">
+                @if (f.vatRegistrationNumber.invalid && f.vatRegistrationNumber.touched) {
+                  <div class="invalid-feedback">La Partita IVA deve essere di esattamente 11 caratteri.</div>
+                }
+              </div>
+
+              <!-- Telefono -->
+              <div class="mb-4">
+                <label for="phoneNumber" class="form-label">Numero di Telefono <span class="text-danger">*</span></label>
+                <input id="phoneNumber" type="text" formControlName="phoneNumber" class="form-control"
+                       placeholder="Il numero a cui i clienti possono contattarti"
+                       [class.is-invalid]="f.phoneNumber.invalid && f.phoneNumber.touched">
+              </div>
+
+              <!-- Modalità di Lavoro -->
+              <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3 text-muted">Modalità di Lavoro (Seleziona almeno una)</h6>
+                  
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="remote" formControlName="remote">
+                    <label class="form-check-label" for="remote">Offro consulenze da remoto (Online)</label>
+                  </div>
+                  
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="onSite" formControlName="onSite">
+                    <label class="form-check-label" for="onSite">Ricevo i clienti in studio (On-Site)</label>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100 py-2" [disabled]="isLoading()">
+                @if (isLoading()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span> Salvataggio...
+                } @else {
+                  Attiva Profilo Professionale
+                }
+              </button>
+
+            </form>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

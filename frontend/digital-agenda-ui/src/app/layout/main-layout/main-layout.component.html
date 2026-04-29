@@ -1,0 +1,127 @@
+<!-- STRUTTURA BASE DEL LAYOUT -->
+<div class="layout-wrapper">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <h1>Agenda Digitale</h1>
+    </div>
+
+    <div class="user-actions">
+      @if (user()) {
+        <span class="welcome-text">
+          Ciao, {{ user()?.firstName }} {{ user()?.lastName }}
+          <span class="badge"
+                [class.badge-pro]="user()?.role === 'PROFESSIONAL'"
+                [class.badge-client]="user()?.role === 'CUSTOMER'">
+            {{ user()?.role === 'PROFESSIONAL' ? 'Professionista' : 'Cliente' }}
+          </span>
+        </span>
+
+              <!-- NUOVO BOTTONE MODIFICA PROFILO NELLA TOPBAR -->
+        @if (user()?.role === 'PROFESSIONAL') {
+          <a routerLink="/profile" 
+             class="mx-2 shadow-sm" 
+             style="background-color: #ffc107; color: #212529; border-radius: 50px; padding: 0.4rem 1.2rem; font-weight: 600; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; transition: all 0.2s ease-in-out;"
+             onmouseover="this.style.backgroundColor='#e0a800'; this.style.transform='scale(1.05)'"
+             onmouseout="this.style.backgroundColor='#ffc107'; this.style.transform='scale(1)'">
+            <i class="bi bi-pencil-square me-2"></i> Modifica Profilo
+          </a>
+        }
+  
+      }
+      <button class="btn-logout" (click)="logout()">Esci</button>
+    </div>
+  </header>
+
+  <!-- NAVIGAZIONE -->
+  <nav class="main-nav">
+    <!-- Dashboard: visibile solo ai PROFESSIONAL -->
+    @if (user()?.role === 'PROFESSIONAL') {
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+        <small class="d-block text-muted" style="font-size: 0.7rem; line-height: 1;">
+          area professionisti
+        </small>
+      </a>
+    }
+
+    <!-- Prenota: visibile a TUTTI gli utenti loggati -->
+    <a routerLink="/booking" routerLinkActive="active">
+      <i class="bi bi-calendar-plus me-1"></i>Prenota
+    </a>
+  </nav>
+
+  <!-- CONTENUTO PRINCIPALE -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- OVERLAY E MODAL DI BLOCCO (Mostrato solo se manca il telefono)       -->
+<!-- ==================================================================== -->
+@if (user() && !user()?.phoneNumber) {
+  
+  <!-- BACKDROP (Sfondo nero) -->
+  <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+    
+    <!-- MODAL BOX (Il riquadro bianco centrale) -->
+    <div style="background: white; width: 90%; max-width: 450px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: left;">
+      
+      <!-- HEADER -->
+      <div style="background: #ffc107; padding: 15px 20px; border-bottom: 1px solid #e9ecef;">
+        <h5 style="margin: 0; font-weight: 700; color: #212529;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> Azione Richiesta
+        </h5>
+      </div>
+      
+      <!-- BODY -->
+      <div style="padding: 25px;">
+        <p style="font-size: 1.1rem; color: #212529;">Ciao <strong>{{ user()?.firstName }}</strong>!</p>
+        <p style="color: #6c757d; font-size: 0.95rem; margin-bottom: 20px;">
+          Per poter utilizzare l'Agenda Digitale ed essere contattato in caso di variazioni sugli appuntamenti, è <strong>obbligatorio</strong> fornire un numero di telefono.
+        </p>
+        
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block; color: #212529;">Il tuo numero di cellulare:</label>
+          <input type="tel" placeholder="Es. 333 1234567" 
+                 [(ngModel)]="missingPhone"
+                 style="width: 100%; padding: 12px 15px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 1rem; outline: none;"
+                 onfocus="this.style.borderColor='#0d6efd'"
+                 onblur="this.style.borderColor='#dee2e6'">
+        </div>
+        
+        @if (errorMessage()) {
+          <div style="color: #dc3545; font-size: 0.85rem; margin-top: 5px; padding: 8px; background: #f8d7da; border-radius: 6px;">
+            {{ errorMessage() }}
+          </div>
+        }
+      </div>
+      
+      <!-- FOOTER -->
+      <div style="padding: 15px 25px; background: #f8f9fa; border-top: 1px solid #e9ecef; display: flex; justify-content: flex-end;">
+        <button type="button" 
+                (click)="savePhone()" 
+                [disabled]="isSaving()"
+                style="width: 100%; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;"
+                onmouseover="this.style.background='#0b5ed7'"
+                onmouseout="this.style.background='#0d6efd'">
+          @if (isSaving()) {
+            Salvataggio...
+          } @else {
+            Salva e Continua &rarr;
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+}
+
+
+
+
