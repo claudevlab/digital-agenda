@@ -1,107 +1,181 @@
 services:
-
-  # ─── DATABASE ────────────────────────────────────────
-  mysql:
-    image: mysql:8.0
-    container_name: agenda-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: agenda_db
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik
     ports:
-      - "3306:3306"           # esposto in locale per accesso da IntelliJ/Workbench
+      - "80:80"
+      - "443:443"
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/acme.json"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql  # schema iniziale
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/acme.json:/acme.json
     networks:
-      - agenda-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ─── RABBITMQ ─────────────────────────────────────────
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: agenda-rabbitmq
+      - public
     restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-    ports:
-      - "5672:5672"           # AMQP — usato dai servizi Spring
-      - "15672:15672"         # Management UI — http://localhost:15672
-    networks:
-      - agenda-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ─── BACKEND (monolita Spring Boot) ──────────────────
+  frontend:
+    build:
+      context: ./frontend/digital-agenda-ui
+      dockerfile: Dockerfile
+    container_name: frontend
+    networks:
+      - public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+    restart: unless-stopped
+    depends_on:
+      - monolita
+
   monolita:
     build:
-      context: ./monolita
+      context: ./backend/digital-agenda-private
       dockerfile: Dockerfile
-    container_name: agenda-monolita
-    restart: unless-stopped
-    env_file:
-      - .env                  # legge tutte le variabili dal file .env
+    container_name: monolita
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/agenda_db?serverTimezone=UTC
-      RABBITMQ_HOST: rabbitmq  # nome del servizio, non localhost!
-    ports:
-      - "8080:8080"
+      # Passiamo solo le URL per far capire a Spring che deve usare i nomi dei container
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    env_file:
+      - .env  # Inietta tutte le altre variabili automaticamente (JWT, MAIL, ecc)
+    networks:
+      - public
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=8080"
     depends_on:
-      mysql:
+      db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks:
-      - agenda-network
-
-  # ─── NOTIFICATION SERVICE ────────────────────────────
-  email-service:
-    build:
-      context: ./email-service
-      dockerfile: Dockerfile
-    container_name: agenda-email-service
     restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./backend/email-service
+      dockerfile: Dockerfile
+    container_name: notification-service
     env_file:
       - .env
     environment:
-      RABBITMQ_HOST: rabbitmq
-    ports:
-      - "8081:8081"
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    networks:
+      - internal
     depends_on:
       rabbitmq:
         condition: service_healthy
-    networks:
-      - agenda-network
-
-  # ─── FRONTEND (Angular + Nginx) ──────────────────────
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: agenda-frontend
     restart: unless-stopped
-    ports:
-      - "4200:80"             # Angular gira su Nginx porta 80, esposto sul 4200
-    depends_on:
-      - monolita
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
-      - agenda-network
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
-# ─── VOLUMI ────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=myresolver"
+      # Protezione con Basic Auth
+      - "traefik.http.middlewares.prom-auth.basicauth.users=${PROMETHEUS_AUTH_USER_PASS}"
+      - "traefik.http.routers.prometheus.middlewares=prom-auth"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+    networks:
+      - internal
+    restart: unless-stopped
+
 volumes:
-  mysql_data:
+  db_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
 
-# ─── RETE INTERNA ──────────────────────────────────────
 networks:
-  agenda-network:
-    driver: bridge
+  public:
+  internal:

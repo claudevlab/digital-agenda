@@ -5,8 +5,8 @@
 *.secret
 *.key
 *.pem
-**/application.properties
-**/application-local.properties
+# **/application.properties
+#**/application-local.properties
 
 # Certificati SSL
 traefik/acme.json
