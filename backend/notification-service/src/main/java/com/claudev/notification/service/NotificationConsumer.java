@@ -1,6 +1,8 @@
 package com.claudev.notification.service;
 
 import com.claudev.notification.dto.EmailRequestDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 public class NotificationConsumer {
 
     private final EmailService emailService;
+    public  static final Logger logger = LoggerFactory.getLogger(NotificationConsumer.class);
 
     public NotificationConsumer(EmailService emailService) {
         this.emailService = emailService;
@@ -15,13 +18,7 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = "notification-queue") // coincide con il nome dell'app monolitica
     public void  consumeMessagge(EmailRequestDTO emailRequest) {
-        System.out.println("Messaggio ricevuto da RabbitMQ monolitica");
-
-        // la mail la invia per davvero
-        emailService.sendEmail(
-                emailRequest.getTo(),
-                emailRequest.getSubject(),
-                emailRequest.getBody()
-        );
+        logger.info("Messaggio ricevuto da RabbitMQ per: {}", emailRequest.getTo());
+       emailService.sendHtmlEmail(emailRequest);
     }
 }

@@ -18,9 +18,8 @@ public class NotificationController {
     }
 
     @PostMapping("/email")
-    public String sendEmail (
-            @RequestBody EmailRequestDTO emailRequestDTO) {
-        emailService.sendEmail(emailRequestDTO.getTo(),emailRequestDTO.getSubject(),emailRequestDTO.getBody());
-        return "Email inviata con successo : " + emailRequestDTO.getTo();
+    public String sendEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
+        emailService.sendHtmlEmail(emailRequestDTO); //  nuovo metodo
+        return "Email inviata con successo a: " + emailRequestDTO.getTo();
     }
 }
