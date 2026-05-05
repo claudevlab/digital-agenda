@@ -1,0 +1,29 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ "main" ] # Si attiva solo quando fai push sul branch main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_IP }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ~/digital-agenda
+          
+          # Scarica il nuovo codice
+          git pull origin main
+          
+          # Ricostruisci solo le immagini che sono cambiate e riavvia i container
+          # (Traefik non staccherà il database o gli altri servizi, aggiornerà solo quelli toccati)
+          docker compose up -d --build
+          
+          # Pulisce le vecchie immagini di Docker per non riempire il disco
+          docker image prune -f
