@@ -2,13 +2,16 @@ name: Deploy to VPS
 
 on:
   push:
-    branches: [ "main" ] # Si attiva solo quando fai push sul branch main
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Checkout codice (necessario per verificare il repo in locale se serve)
+      uses: actions/checkout@v4
+
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -16,14 +19,25 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          set -e  # IMPORTANTE: blocca lo script al primo errore invece di andare avanti
+          
           cd ~/digital-agenda
           
-          # Scarica il nuovo codice
+          # 1. Scarica il nuovo codice (aggiorna ANCHE docker-compose.yml)
           git pull origin main
           
-          # Ricostruisci solo le immagini che sono cambiate e riavvia i container
-          # (Traefik non staccherà il database o gli altri servizi, aggiornerà solo quelli toccati)
-          docker compose up -d --build
+          # 2. Ricrea i container la cui configurazione è cambiata (porte, variabili ecc.) IMPORTANTE
+          # --remove-orphans rimuove container di servizi rimossi dal docker-compose.yml
+          docker compose up -d --build --remove-orphans
           
-          # Pulisce le vecchie immagini di Docker per non riempire il disco
+          # 3. Aspetta che i servizi critici siano healthy prima di dichiarare successo
+          echo "Attendo che db sia healthy..."
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" db | grep -q "healthy"; do sleep 3; done'
+          
+          echo "Attendo che rabbitmq sia healthy..."
+          timeout 60 bash -c 'until docker inspect --format="{{.State.Health.Status}}" rabbitmq | grep -q "healthy"; do sleep 3; done'
+          
+          # 4. Pulisce le vecchie immagini
           docker image prune -f
+          
+          echo "Deploy completato con successo!"
