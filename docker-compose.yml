@@ -50,6 +50,9 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
+      # FIXED Sfruttiamo ${DOMAIN} per costruire gli URL di produzione!
+      - APP_ALLOWED_ORIGINS=https://${DOMAIN},https://www.${DOMAIN}
+      - APP_FRONTEND_URL=https://${DOMAIN}
     env_file:
       - .env  # Inietta tutte le altre variabili automaticamente (JWT, MAIL, ecc)
     networks:
