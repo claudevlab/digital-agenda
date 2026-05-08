@@ -39,22 +39,20 @@ services:
     depends_on:
       - monolita
 
-  monolita:
+    monolita:
     build:
       context: ./backend/digital-agenda-private
       dockerfile: Dockerfile
     container_name: monolita
     environment:
-      # Passiamo solo le URL per far capire a Spring che deve usare i nomi dei container
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
-      # FIXED Sfruttiamo ${DOMAIN} per costruire gli URL di produzione!
       - APP_ALLOWED_ORIGINS=https://${DOMAIN},https://www.${DOMAIN}
       - APP_FRONTEND_URL=https://${DOMAIN}
     env_file:
-      - .env  # Inietta tutte le altre variabili automaticamente (JWT, MAIL, ecc)
+      - .env
     networks:
       - public
       - internal
@@ -64,6 +62,22 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
+      
+      # --- AGGIUNTE PER TRAEFIK MIDDLEWARE ---
+      # 1. Diciamo a Traefik di forzare gli header X-Forwarded per Spring Boot
+      - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Port=443"
+      - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Host=api.${DOMAIN}"
+      
+      # 2. Permettiamo a Traefik stesso di gestire un pre-CORS
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,POST,OPTIONS,PUT,DELETE,PATCH"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://${DOMAIN},https://www.${DOMAIN}"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
+      
+      # 3. Assegniamo i middleware al router
+      - "traefik.http.routers.api.middlewares=proxy-headers,cors-headers"
     depends_on:
       db:
         condition: service_healthy
