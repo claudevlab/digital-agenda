@@ -39,7 +39,7 @@ services:
     depends_on:
       - monolita
 
-      monolita:
+        monolita:
     build:
       context: ./backend/digital-agenda-private
       dockerfile: Dockerfile
@@ -62,8 +62,6 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
-      
-      # MIDDLEWARES PER RISOLVERE I PROBLEMI DI PROXY E CORS
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Port=443"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Host=api.${DOMAIN}"
@@ -72,8 +70,6 @@ services:
       - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://${DOMAIN},https://www.${DOMAIN}"
       - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
-      
-      # Applichiamo i middlewares al router API
       - "traefik.http.routers.api.middlewares=proxy-headers,cors-headers"
     depends_on:
       db:
