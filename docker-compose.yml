@@ -157,6 +157,8 @@ services:
       - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=myresolver"
+      - "traefik.docker.network=public"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   node-exporter:
     image: prom/node-exporter:latest

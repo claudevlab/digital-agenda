@@ -157,18 +157,6 @@
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${org.mapstruct.version}</version>
                         </path>
-                        <!-- IMPORTANTE: Se usi anche Lombok nel progetto, devi aggiungere anche lui qui sotto, altrimenti MapStruct e Lombok litigano -->
-                        <!-- Se non usi Lombok, puoi cancellare questo blocco <path> qui sotto -->
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
-                        </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
