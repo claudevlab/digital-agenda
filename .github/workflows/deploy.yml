@@ -9,22 +9,35 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Deploy via SSH
+    - name: Checkout codice da GitHub
+      uses: actions/checkout@v4
+
+    - name: Copia i file aggiornati sulla VPS
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VPS_IP }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "docker-compose.yml"  # Se hai altri file di config che devono andare sulla VPS, aggiungili qui separati da virgola
+        target: "/home/deploy/digital-agenda"
+        strip_components: 0
+        overwrite: true
+
+    - name: Riavvia Docker Compose sulla VPS
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VPS_IP }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd ~/digital-agenda
+          cd /home/deploy/digital-agenda
           
-          # Scarica le nuove modifiche
-          git pull origin main
+          # Con questo fix docker-compose.yml dovrebbe aggiornarsi
           
           # Forza la ricreazione del database per fargli prendere le nuove porte
           docker compose up -d --force-recreate db
           
-          # Poi lancia il comando normale per gli altri servizi
+          # Riavvia il resto del progetto ricostruendo le immagini aggiornate
           docker compose up -d --build --remove-orphans
           
           docker image prune -f
