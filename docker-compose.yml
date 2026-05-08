@@ -72,9 +72,9 @@ services:
       - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
       - "traefik.http.routers.api.middlewares=proxy-headers,cors-headers"
     depends_on:
-      db:
+      - db:
         condition: service_healthy
-      rabbitmq:
+      - rabbitmq:
         condition: service_healthy
     restart: unless-stopped
 
