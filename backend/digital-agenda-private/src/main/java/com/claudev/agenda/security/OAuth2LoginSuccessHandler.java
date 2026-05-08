@@ -6,6 +6,7 @@ import com.claudev.agenda.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -19,6 +20,9 @@ import java.io.IOException;
 // Simple.. gestisce la navigazione post login
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
@@ -67,7 +71,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         //reindirizzamento al frontend con il token nell'URL
         // in produzione si utilizzano i cookie o un redirect sicuro , per ora lascio cosi ---TO DO
-        response.sendRedirect("http://localhost:4200/login-success?token=" + token);
+        response.sendRedirect(frontendUrl + "/login-success?token=" + token);
 
     }
 
