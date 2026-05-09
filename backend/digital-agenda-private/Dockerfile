@@ -1,7 +1,7 @@
 # monolita/Dockerfile
 
 # Stage 1: Build (ha Maven, JDK, tutto)
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /app
 COPY pom.xml .
 # Scarica le dipendenze in cache separata (ottimizzazione layer cache Docker)
@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Stage 2: Runtime (solo JRE leggero, niente build tools)
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:17-jre-alpine AS runtime
 WORKDIR /app
 # Crea utente non-root per sicurezza
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
