@@ -144,8 +144,14 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering> <!-- METTI QUESTO A FALSE -->
+            </resource>
+        </resources>
         <plugins>
-            <!-- IL PLUGIN PER MAPSTRUCT (Che avevi tu, giustamente) -->
+            <!-- IL PLUGIN PER MAPSTRUCT -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
