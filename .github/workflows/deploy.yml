@@ -42,7 +42,7 @@ jobs:
   # ─────────────────────────────────────────────
   # JOB 2: Build e Push del microservizio email
   # ─────────────────────────────────────────────
-  build-notification:
+  build-notification-service:
     name: Build Notification Service JAR + Docker Image
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +57,7 @@ jobs:
         cache: maven
 
     - name: Build JAR con Maven
-      run: mvn clean package -DskipTests -f backend/email-service/pom.xml
+      run: mvn clean package -DskipTests -f backend/notification-service/pom.xml
 
     - name: Login su Docker Hub
       uses: docker/login-action@v3
