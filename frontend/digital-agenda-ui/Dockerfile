@@ -17,7 +17,7 @@ RUN rm -rf /usr/share/nginx/html/*
 FROM nginx:1.27-alpine AS runtime
 # Trucco Bash: Troviamo l'index.html ovunque esso sia (in browser o direttamente nella root)
 # E lo copiamo, insieme a tutto il resto, nella cartella di nginx
-COPY --from=builder /app/dist/ /dist_temp/
+COPY --from=builder /app/dist/digital-agenda-ui/browser /usr/share/nginx/html/
 RUN find /dist_temp -type d -name "browser" -exec cp -r {}/* /usr/share/nginx/html/ \; || cp -r /dist_temp/*/* /usr/share/nginx/html/
 
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
