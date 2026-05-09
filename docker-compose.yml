@@ -69,6 +69,8 @@ services:
       - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
       - "traefik.http.routers.api.middlewares=proxy-headers,cors-headers"
+            # Diciamo a Traefik quale rete usare la rete pubblica per comunicare col backend
+      - "traefik.docker.network=public"
     depends_on:
       db:
         condition: service_healthy
