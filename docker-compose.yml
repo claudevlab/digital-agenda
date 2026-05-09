@@ -23,7 +23,7 @@ services:
       - public
     restart: unless-stopped
 
-   frontend:
+  frontend:
     image: ${DOCKERHUB_USERNAME}/digital-agenda-frontend:latest
     container_name: frontend
     networks:
