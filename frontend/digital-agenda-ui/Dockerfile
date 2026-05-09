@@ -9,9 +9,16 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration=production
 
+# Rimuovi eventuali file di default di nginx
+RUN rm -rf /usr/share/nginx/html/*
+
+
 # Stage 2: Nginx serve i file statici
 FROM nginx:1.27-alpine AS runtime
-# Il jolly /*/browser è un ottimo trucco per le nuove versioni di Angular 17+
-COPY --from=builder /app/dist/digital-agenda-ui/browser /usr/share/nginx/html
+# Trucco Bash: Troviamo l'index.html ovunque esso sia (in browser o direttamente nella root)
+# E lo copiamo, insieme a tutto il resto, nella cartella di nginx
+COPY --from=builder /app/dist/ /dist_temp/
+RUN find /dist_temp -type d -name "browser" -exec cp -r {}/* /usr/share/nginx/html/ \; || cp -r /dist_temp/*/* /usr/share/nginx/html/
+
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
