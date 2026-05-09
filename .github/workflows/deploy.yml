@@ -5,25 +5,119 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+
+  # ─────────────────────────────────────────────
+  # JOB 1: Build e Push del backend (monolita)
+  # ─────────────────────────────────────────────
+  build-monolita:
+    name: Build Monolita JAR + Docker Image
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout codice da GitHub
+    - name: Checkout codice
       uses: actions/checkout@v4
 
-    - name: Copia i file aggiornati sulla VPS
+    - name: Setup Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build JAR con Maven
+      run: mvn clean package -DskipTests -f backend/digital-agenda-private/pom.xml
+
+    - name: Login su Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build e Push immagine monolita
+      uses: docker/build-push-action@v6
+      with:
+        context: ./backend/digital-agenda-private
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/digital-agenda-monolita:latest
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Build e Push del microservizio email
+  # ─────────────────────────────────────────────
+  build-notification:
+    name: Build Notification Service JAR + Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout codice
+      uses: actions/checkout@v4
+
+    - name: Setup Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build JAR con Maven
+      run: mvn clean package -DskipTests -f backend/email-service/pom.xml
+
+    - name: Login su Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build e Push immagine notification
+      uses: docker/build-push-action@v6
+      with:
+        context: ./backend/email-service
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/digital-agenda-notification:latest
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Build e Push del frontend Angular
+  # ─────────────────────────────────────────────
+  build-frontend:
+    name: Build Frontend Angular + Docker Image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout codice
+      uses: actions/checkout@v4
+
+    - name: Login su Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build e Push immagine frontend
+      uses: docker/build-push-action@v6
+      with:
+        context: ./frontend/digital-agenda-ui
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/digital-agenda-frontend:latest
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Deploy sulla VPS (parte solo dopo i 3 build)
+  # ─────────────────────────────────────────────
+  deploy:
+    name: Deploy sulla VPS
+    runs-on: ubuntu-latest
+    needs: [build-monolita, build-notification, build-frontend]
+
+    steps:
+    - name: Checkout codice
+      uses: actions/checkout@v4
+
+    - name: Copia docker-compose.yml sulla VPS
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.VPS_IP }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "docker-compose.yml"  # Se hai altri file di config che devono andare sulla VPS, aggiungili qui separati da virgola
+        source: "docker-compose.yml"
         target: "/home/deploy/digital-agenda"
-        strip_components: 0
         overwrite: true
 
-    - name: Riavvia Docker Compose sulla VPS
+    - name: Deploy sulla VPS
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.VPS_IP }}
@@ -31,13 +125,14 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /home/deploy/digital-agenda
-          
-          # Con questo fix docker-compose.yml dovrebbe aggiornarsi
-          
-          # Forza la ricreazione del database per fargli prendere le nuove porte
-          docker compose up -d --force-recreate db
-          
-          # Riavvia il resto del progetto ricostruendo le immagini aggiornate
-          docker compose up -d --build --remove-orphans
-          
+
+          # Scarica le nuove immagini da Docker Hub (solo quelle cambiate)
+          docker compose pull frontend monolita notification-service
+
+          # Ricrea i container con le nuove immagini
+          # DB e RabbitMQ NON vengono toccati: hanno dati persistenti
+          docker compose up -d --no-deps --force-recreate \
+            frontend monolita notification-service
+
+          # Pulizia immagini vecchie
           docker image prune -f
