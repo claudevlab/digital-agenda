@@ -11,7 +11,7 @@ import { ProfessionalResponseDTO, UserResponseDTO } from '../models/user.model';
 export class UserService {
 
   // Base URL per tutti gli endpoint utente: http://localhost:8080/api/users
-    private apiUrl = `${environment.apiUrl}/users`;
+    private apiUrl = `${environment.apiUrl}/api/users`;
 
     constructor (private http : HttpClient) {}
 

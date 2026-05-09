@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +17,8 @@ export class LoginComponent {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService)
   private router = inject(Router);
+
+  googleLoginUrl = environment.apiUrl + '/oauth2/authorization/google';
 
   // Signal per gestire lo stato di caricamento del bottone
   isLoading = signal(false);

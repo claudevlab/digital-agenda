@@ -3,6 +3,7 @@ import { FormBuilder,ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router , RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -16,6 +17,9 @@ export class RegisterComponent {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+
+  // login con google - produzione
+  googleLoginUrl = environment.apiUrl + '/oauth2/authorization/google';
 
   // utilizziamo signal per gestire lo stato : 'CLIENT' | 'PROFESSIONAL'
   selectedRole = signal <'CLIENT' | 'PROFESSIONAL'> ('CLIENT');
