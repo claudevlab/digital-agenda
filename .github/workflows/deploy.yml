@@ -68,7 +68,7 @@ jobs:
     - name: Build e Push immagine notification
       uses: docker/build-push-action@v6
       with:
-        context: ./backend/email-service
+        context: ./backend/notification-service
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/digital-agenda-notification:latest
 
@@ -101,7 +101,7 @@ jobs:
   deploy:
     name: Deploy sulla VPS
     runs-on: ubuntu-latest
-    needs: [build-monolita, build-notification, build-frontend]
+    needs: [build-monolita, build-notification-service, build-frontend]
 
     steps:
     - name: Checkout codice
