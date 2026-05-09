@@ -60,16 +60,12 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
+      #  Header Proxy (Indispensabili per OAuth e per far capire a Spring che è in HTTPS)
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Port=443"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Host=api.${DOMAIN}"
-      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,POST,OPTIONS,PUT,DELETE,PATCH"
-      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowheaders=*"
-      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://${DOMAIN},https://www.${DOMAIN}"
-      - "traefik.http.middlewares.cors-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.cors-headers.headers.addvaryheader=true"
-      - "traefik.http.routers.api.middlewares=proxy-headers,cors-headers"
-            # Diciamo a Traefik quale rete usare la rete pubblica per comunicare col backend
+      - "traefik.http.routers.api.middlewares=proxy-headers"
+      #  La rete corretta per evitare il 504 Gateway Timeout
       - "traefik.docker.network=public"
     depends_on:
       db:
