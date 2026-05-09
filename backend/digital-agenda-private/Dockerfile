@@ -1,7 +1,7 @@
 
 
 # Usa SOLO Java, niente Maven, perché il JAR lo ha già buildato nella pipeline
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
