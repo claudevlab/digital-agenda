@@ -24,9 +24,8 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend/digital-agenda-ui
-      dockerfile: Dockerfile
+    # MODIFICATO: immagine da Docker Hub invece di build locale
+    image: ${DOCKERHUB_USERNAME}/digital-agenda-frontend:latest
     container_name: frontend
     networks:
       - public
@@ -40,9 +39,8 @@ services:
       - monolita
 
   monolita:
-    build:
-      context: ./backend/digital-agenda-private
-      dockerfile: Dockerfile
+    # MODIFICATO: immagine da Docker Hub invece di build locale
+    image: ${DOCKERHUB_USERNAME}/digital-agenda-monolita:latest
     container_name: monolita
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
@@ -79,9 +77,8 @@ services:
     restart: unless-stopped
 
   notification-service:
-    build:
-      context: ./backend/email-service
-      dockerfile: Dockerfile
+    # MODIFICATO: immagine da Docker Hub invece di build locale
+    image: ${DOCKERHUB_USERNAME}/digital-agenda-notification:latest
     container_name: notification-service
     env_file:
       - .env
@@ -98,7 +95,7 @@ services:
     image: mysql:8.0
     container_name: db
     ports:
-      -  "127.0.0.1:3306:3306" 
+      - "127.0.0.1:3306:3306"
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USERNAME}
@@ -147,7 +144,6 @@ services:
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=myresolver"
-      # Protezione con Basic Auth
       - "traefik.http.middlewares.prom-auth.basicauth.users=${PROMETHEUS_AUTH_USER_PASS}"
       - "traefik.http.routers.prometheus.middlewares=prom-auth"
 
