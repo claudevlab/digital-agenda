@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.6  # <--- AGGIORNATO ALLA 3.6 PER RISOLVERE IL BUG DOCKER
+    image: traefik:v3.6
     container_name: traefik
     ports:
       - "80:80"
@@ -30,7 +30,7 @@ services:
       - public
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`, `www.${DOMAIN}`)"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       - "traefik.http.routers.frontend.service=frontend"
@@ -48,8 +48,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
+      # Questo deve corrispondere ai domini gestiti dal frontend
       - APP_ALLOWED_ORIGINS=https://${DOMAIN},https://www.${DOMAIN}
       - APP_FRONTEND_URL=https://${DOMAIN}
+      - SERVER_FORWARD_HEADERS_STRATEGY=framework
     env_file:
       - .env
     networks:
@@ -57,16 +59,15 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
+      # Niente www qui, l'API sta su un singolo dominio
       - "traefik.http.routers.api.rule=Host(`api.${DOMAIN}`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
-      #  Header Proxy (Indispensabili per OAuth e per far capire a Spring che è in HTTPS)
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Port=443"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Host=api.${DOMAIN}"
       - "traefik.http.routers.api.middlewares=proxy-headers"
-      #  La rete corretta per evitare il 504 Gateway Timeout
       - "traefik.docker.network=public"
     depends_on:
       db:
@@ -76,7 +77,6 @@ services:
     restart: unless-stopped
 
   notification-service:
-    # MODIFICATO: immagine da Docker Hub invece di build locale
     image: ${DOCKERHUB_USERNAME}/digital-agenda-notification:latest
     container_name: notification-service
     env_file:
@@ -145,6 +145,7 @@ services:
       - "traefik.http.routers.prometheus.tls.certresolver=myresolver"
       - "traefik.http.middlewares.prom-auth.basicauth.users=${PROMETHEUS_AUTH_USER_PASS}"
       - "traefik.http.routers.prometheus.middlewares=prom-auth"
+      - "traefik.docker.network=public"
 
   grafana:
     image: grafana/grafana:latest
