@@ -4,6 +4,7 @@ import com.claudev.agenda.security.CustomUserDetailsService;
 import com.claudev.agenda.security.JwtAuthenticationFilter;
 import com.claudev.agenda.security.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity // per configurare spring security
@@ -29,6 +36,9 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final AppConfig appConfig;
 
+    @Value("$(app.allowed-origins:http:localhost:4200}")
+    private String[] allowedOrigins;
+
     public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter,
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
                           AppConfig appConfig) {
@@ -38,13 +48,34 @@ public class SecurityConfig {
         this.appConfig = appConfig;
     }
 
+    // PRODUZIONE : FIX  BUG cors preflight
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Consentiamo le origini ma per sicurezza aggiungiamo i domini
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+
+        // Autorizziamo tutti i metodi necessari, IMPORTANTISSIMO IL METODO 'OPTIONS'
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
+        configuration.setAllowCredentials(true); // Serve se passi i token nei cookie o localStorage
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
         http.
-                csrf(AbstractHttpConfigurer::disable) // disabilito il csrf ( standard per API REST stateless)
-                .cors(Customizer.withDefaults()) // fix 1 per il frontend -> gli diciamo : utilizza la configurazione CORS "CorsConfig")
+                csrf(AbstractHttpConfigurer::disable) // disabilito il csrf , utilizziamo JWT
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
+
                 .authorizeHttpRequests(auth -> auth
 
+                        // FIX BUG cors preflight : lasciamo passare tutte le richieste OPTIONS per evitare blocchi CORS(401)
                         /* fix 2 --> il frontend manda una richiesta preliminare che e' priva di token
                         e spring security la reindirizzava a /login
                         con permitAll() invece lo consente
@@ -72,7 +103,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // niente sessioni server
                 )
-                // se la richiesta non e' autenticata risponsi 401 (evita il redirect a google)
+                // se la richiesta non e' autenticata rispondi 401 (evita il redirect a google)
                 .exceptionHandling( ex -> ex
                         .authenticationEntryPoint(((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -103,5 +134,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
 
 }
