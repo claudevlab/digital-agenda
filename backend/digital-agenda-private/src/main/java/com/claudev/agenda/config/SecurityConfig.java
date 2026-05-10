@@ -106,7 +106,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
         http.
                 csrf(AbstractHttpConfigurer::disable) // disabilito il csrf , utilizziamo JWT
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
 
                 .authorizeHttpRequests(auth -> auth
 
