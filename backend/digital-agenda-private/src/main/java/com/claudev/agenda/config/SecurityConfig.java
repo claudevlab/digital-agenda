@@ -19,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -36,7 +37,7 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final AppConfig appConfig;
 
-    @Value("$(app.allowed-origins:http:localhost:4200}")
+    @Value("${app.allowed-origins:http:localhost:4200}")
     private String[] allowedOrigins;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -48,8 +49,8 @@ public class SecurityConfig {
         this.appConfig = appConfig;
     }
 
-    // CORS CONFIG piu permissivo
-
+    /*
+    // CORS filter piu permissivo e all'esterno
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
@@ -80,33 +81,36 @@ public class SecurityConfig {
         return new CorsFilter(source);
     }
 
-    /*
+     */
+
+
     // PRODUZIONE : FIX  BUG cors preflight
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Consentiamo le origini ma per sicurezza aggiungiamo i domini
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        configuration.setAllowedOriginPatterns(List.of("https://digital-agenda.it", "https://www.digital-agenda.it"));
 
         // Autorizziamo tutti i metodi necessari, IMPORTANTISSIMO IL METODO 'OPTIONS'
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
-        configuration.setAllowCredentials(true); // Serve se passi i token nei cookie o localStorage
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);                        // Serve se passi i token nei cookie o localStorage
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-     */
+
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
         http.
                 csrf(AbstractHttpConfigurer::disable) // disabilito il csrf , utilizziamo JWT
-                //.cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
 
                 .authorizeHttpRequests(auth -> auth
 
