@@ -9,8 +9,6 @@ services:
       - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      # FIX BUG DOCKER 29:
-      - "--providers.docker.endpoint=unix:///var/run/docker.sock?version=1.40"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
@@ -39,11 +37,9 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.docker.network=public"
     restart: unless-stopped
-    depends_on:
       - monolita
 
   monolita:
-    # MODIFICATO: immagine da Docker Hub invece di build locale
     image: ${DOCKERHUB_USERNAME}/digital-agenda-monolita:latest
     container_name: monolita
     environment:
