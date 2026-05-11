@@ -37,7 +37,7 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final AppConfig appConfig;
 
-    @Value("${app.allowed-origins:http:localhost:4200}")
+    @Value("${app.allowed-origins:http://localhost:4200}")
     private String[] allowedOrigins;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -88,16 +88,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Consentiamo le origini ma per sicurezza aggiungiamo i domini
-        configuration.setAllowedOriginPatterns(List.of("https://digital-agenda.it", "https://www.digital-agenda.it"));
-
-        // Autorizziamo tutti i metodi necessari, IMPORTANTISSIMO IL METODO 'OPTIONS'
+        configuration.setAllowedOriginPatterns(List.of(
+                "https://digital-agenda.it",
+                "https://www.digital-agenda.it"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);                        // Serve se passi i token nei cookie o localStorage
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -108,37 +107,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
-        http.
-                csrf(AbstractHttpConfigurer::disable) // disabilito il csrf , utilizziamo JWT
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // utilizziamo il bean creato sopra
-
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-
-                        // FIX BUG cors preflight : lasciamo passare tutte le richieste OPTIONS per evitare blocchi CORS(401)
-                        /* fix 2 --> il frontend manda una richiesta preliminare che e' priva di token
-                        e spring security la reindirizzava a /login
-                        con permitAll() invece lo consente
-                         */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Auth (login/register) aperto a tutti
-                        .requestMatchers("/api/auth/**").permitAll() // autorizza gli url pubblici /login/register
-
-                        //Swagger aperto a tutti per la documentazione
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-
-                        // Per evitare grattacapi futuri inseriamo un inoltro automatico alla rotta nascosta /error
-                        // rende piu' facile il debug in futuro
                         .requestMatchers("/error").permitAll()
-
-                        /*
-                        // api schedules richiede autentificazione JWT
-                        .requestMatchers("/api/schedules/**").authenticated()
-
-                         */
-
-                        .anyRequest().authenticated()  // tutto il resto richiede il token
+                        .anyRequest().authenticated()
                 )
+        
+
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // niente sessioni server
                 )
