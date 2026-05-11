@@ -35,7 +35,7 @@ services:
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       - "traefik.http.routers.frontend.service=frontend"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-      - "traefik.docker.network=public"
+      - "traefik.docker.network=digital-agenda_public"
     restart: unless-stopped
     depends_on:
       - monolita
@@ -68,7 +68,7 @@ services:
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Port=443"
       - "traefik.http.middlewares.proxy-headers.headers.customrequestheaders.X-Forwarded-Host=api.${DOMAIN}"
       - "traefik.http.routers.api.middlewares=proxy-headers"
-      - "traefik.docker.network=public"
+      - "traefik.docker.network=digital-agenda_public"
     depends_on:
       db:
         condition: service_healthy
@@ -145,7 +145,7 @@ services:
       - "traefik.http.routers.prometheus.tls.certresolver=myresolver"
       - "traefik.http.middlewares.prom-auth.basicauth.users=${PROMETHEUS_AUTH_USER_PASS}"
       - "traefik.http.routers.prometheus.middlewares=prom-auth"
-      - "traefik.docker.network=public"
+      - "traefik.docker.network=digital-agenda_public"
 
   grafana:
     image: grafana/grafana:latest
@@ -163,7 +163,7 @@ services:
       - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls.certresolver=myresolver"
-      - "traefik.docker.network=public"
+      - "traefik.docker.network=digital-agenda_public"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   node-exporter:
