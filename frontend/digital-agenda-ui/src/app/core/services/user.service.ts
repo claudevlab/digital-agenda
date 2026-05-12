@@ -11,7 +11,7 @@ import { ProfessionalResponseDTO, UserResponseDTO } from '../models/user.model';
 export class UserService {
 
   // Base URL per tutti gli endpoint utente: http://localhost:8080/api/users
-    private apiUrl = `${environment.apiUrl}/users`;
+    private apiUrl = `${environment.apiUrl}/api/users`;
 
     constructor (private http : HttpClient) {}
 
@@ -43,7 +43,7 @@ la struttura della chiamata httt.patch deve avere 3 componenti
 
   // per salvare il numero di tel con il login di google
     updatePhone(phoneNumber: string) {
-    return this.http.patch(`${environment.apiUrl}/update-phone`, { phoneNumber });
+    return this.http.patch(`${this.apiUrl}/update-phone`, { phoneNumber });
   }
 
   updateProfessionalProfile(payload: any) {

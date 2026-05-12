@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 })
 export class ScheduleService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/schedules`;
+  private apiUrl = `${environment.apiUrl}/api/schedules`;
 
   //GET 
   // recupera tutti gli schedule del professionista loggato
