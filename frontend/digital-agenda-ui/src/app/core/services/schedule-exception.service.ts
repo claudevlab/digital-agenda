@@ -9,7 +9,7 @@ import { ScheduleExceptionRequest, ScheduleExceptionResponse } from '../models/s
 })
 export class ScheduleExceptionService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/exceptions`;
+  private apiUrl = `${environment.apiUrl}/api/exceptions`;
 
   // GET /api/exceptions/{professionalId}
   getExceptionsByProfessional(professionalId : number): 

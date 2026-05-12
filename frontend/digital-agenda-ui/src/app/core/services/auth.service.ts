@@ -10,7 +10,7 @@ import { tap } from 'rxjs';
 })
 export class AuthService {
 
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}/api/auth`;
 
   // utilizziamo la libreria signal (per gestire l'utente connesso in modo piu' reattivo)
   // all'accesso segna l'user e lo cancella all'uscita
