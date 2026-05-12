@@ -104,7 +104,7 @@ export class AuthService {
 
   // metodo per fare l'upgrade del professionista
   upgradeToProfessional(payload: any)  {
-    const userApiUrl = `${environment.apiUrl}/users`;
+    const userApiUrl = `${environment.apiUrl}/api/users`;
     return this.http.patch(`${userApiUrl}/upgrade-to-professional`, payload, { responseType: 'text' });
   }
 
