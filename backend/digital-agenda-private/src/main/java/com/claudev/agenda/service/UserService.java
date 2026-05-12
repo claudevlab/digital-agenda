@@ -9,6 +9,7 @@ import com.claudev.agenda.enums.EmailType;
 import com.claudev.agenda.enums.Role;
 import com.claudev.agenda.mapper.UserMapper;
 import com.claudev.agenda.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,9 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RabbitMQProducer rabbitMQProducer;
+
+    @Value("${app.frontend-url}")
+    private String appWebUrl;
 
     public UserService(UserRepository userRepository, UserMapper userMapper,PasswordEncoder passwordEncoder,RabbitMQProducer rabbitMQProducer) {
         this.userRepository = userRepository;
@@ -57,7 +61,7 @@ public class UserService {
         emailRequestDTO.setCustomerName(savedUser.getFirstName() + " " + savedUser.getLastName());
 
         // Impostiamo l'URL dell'applicazione (front-end)
-        emailRequestDTO.setAppUrl("http://localhost:4200/login");
+        emailRequestDTO.setAppUrl(appWebUrl);
 
         rabbitMQProducer.sendEmailNotification(emailRequestDTO);
         return savedUser;
@@ -97,7 +101,7 @@ public class UserService {
 
                     // Campi dinamici per Thymeleaf (adattali a come è fatto il tuo template "registration-confirmed.html")
                     emailRequest.setCustomerName(savedUser.getFirstName());
-                    emailRequest.setAppUrl("http://localhost:4200/login"); // Sostituisci con l'URL vero del frontend in prod
+                    emailRequest.setAppUrl(appWebUrl); // Sostituisci con l'URL vero del frontend in prod
 
                     // 3. SPEDIZIONE ASINCRONA DELL'EVENTO AL MICROSERVIZIO!
                     rabbitMQProducer.sendEmailNotification(emailRequest);
@@ -137,7 +141,7 @@ public class UserService {
         userRepository.save(user);
 
         // 3 - prepariamo l'email con il link di reset ( puntera' al frontend)
-        String resetLink = "http://localhost:4200/reset-password?token=" + token;
+        String resetLink = appWebUrl + "/reset-password?token=" + token;
 
         EmailRequestDTO emailRequest = new EmailRequestDTO();
         emailRequest.setTo(user.getEmail());
@@ -179,7 +183,7 @@ public class UserService {
         emailRequest.setEmailType(EmailType.PASSWORD_CHANGED_SUCCESS);
         emailRequest.setCustomerName(user.getFirstName());
         // Non serve l'appUrl per un reset, o se vuoi puoi metterlo per farli loggare
-        emailRequest.setAppUrl("http://localhost:4200/login");
+        emailRequest.setAppUrl(appWebUrl);
 
         rabbitMQProducer.sendEmailNotification(emailRequest);
 
