@@ -204,3 +204,42 @@
 }
 
 .text-decoration-underline-hover:hover { text-decoration: underline; }
+
+// layout di base (desktop) 
+.appointment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.apt-datetime,
+.apt-notes,
+.apt-status,
+.apt-actions {
+  min-width: 0; //  con flex per permettere al testo di stringersi
+}
+
+@media (max-width: 576px) {
+  .appointment-item {
+    flex-direction: column;       // le colonne diventano righe
+    align-items: flex-start;
+  }
+
+  .apt-client {
+    width: 100%;
+    min-width: 0;                 // niente vincolo rigido su mobile
+  }
+
+  .apt-datetime,
+  .apt-notes,
+  .apt-status,
+  .apt-actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .apt-notes {
+    word-break: break-word;
+    overflow-wrap: anywhere;      // il testo lungo va a capo, non esce dal box
+  }
+}
