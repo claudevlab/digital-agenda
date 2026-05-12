@@ -8,5 +8,5 @@ export const environment = {
 
 export const environment = {
   production: true,
-  apiUrl: 'https://api.digital-agenda.it'
+  apiUrl: 'https://api.digital-agenda.it/api'
 };

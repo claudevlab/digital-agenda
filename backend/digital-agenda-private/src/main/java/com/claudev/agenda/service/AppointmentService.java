@@ -10,6 +10,7 @@ import com.claudev.agenda.enums.AppointmentStatus;
 import com.claudev.agenda.enums.EmailType;
 import com.claudev.agenda.mapper.AppointmentMapper;
 import com.claudev.agenda.repository.AppointmentRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ public class AppointmentService {
     private final RabbitMQProducer rabbitMQProducer;
     private final ScheduleExceptionService scheduleExceptionService;
     private final AppointmentMapper appointmentMapper;
+
+    @Value("${app.frontend-url}")
+    private String appWebUrl;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
                               RabbitMQProducer rabbitMQProducer ,
@@ -133,7 +137,7 @@ public class AppointmentService {
                 appointmentSaved.getAppointmentDateTime().toString());
         emailToProfessional.setDurationMinutes(appointmentSaved.getDurationMinutes());
         emailToProfessional.setNotes(appointmentSaved.getNotes());
-        emailToProfessional.setAppUrl("http://localhost:4200");  // reindirizzamento al frontend | DA SISTEMARE |
+        emailToProfessional.setAppUrl(appWebUrl);  // reindirizzamento alla web app
 
         // invia la mail in modo asincrono
         rabbitMQProducer.sendEmailNotification(emailToProfessional);
@@ -199,7 +203,7 @@ public class AppointmentService {
         emailToCustomer.setAppointmentDateTime(
                 appointmentUpdated.getAppointmentDateTime().toString());
         emailToCustomer.setDurationMinutes(appointmentUpdated.getDurationMinutes());
-        emailToCustomer.setAppUrl("http://localhost:4200");
+        emailToCustomer.setAppUrl(appWebUrl);
         emailToCustomer.setReasonRejected(appointmentUpdated.getReasonRejected());
         rabbitMQProducer.sendEmailNotification(emailToCustomer);
 
@@ -232,7 +236,7 @@ public class AppointmentService {
         emailToCustomer.setProfessionalName(professionalFullName);
         emailToCustomer.setAppointmentDateTime(appointmentSelected.getAppointmentDateTime().toString());
         emailToCustomer.setDurationMinutes(appointmentSelected.getDurationMinutes());
-        emailToCustomer.setAppUrl("http://localhost:4200");
+        emailToCustomer.setAppUrl(appWebUrl);
         rabbitMQProducer.sendEmailNotification(emailToCustomer);
 
         // Email al professionista
@@ -244,7 +248,7 @@ public class AppointmentService {
         emailToProfessional.setProfessionalName(professionalFullName);
         emailToProfessional.setAppointmentDateTime(appointmentSelected.getAppointmentDateTime().toString());
         emailToProfessional.setDurationMinutes(appointmentSelected.getDurationMinutes());
-        emailToProfessional.setAppUrl("http://localhost:4200");
+        emailToProfessional.setAppUrl(appWebUrl);
         rabbitMQProducer.sendEmailNotification(emailToProfessional);
 
     }
