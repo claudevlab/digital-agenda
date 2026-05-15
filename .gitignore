@@ -1,3 +1,5 @@
+
+
 # --- SICUREZZA ---
 .env
 .env.local
@@ -6,7 +8,7 @@
 *.key
 *.pem
 # **/application.properties
-#**/application-local.properties
+**/application-local.properties
 
 # Certificati SSL
 traefik/acme.json
