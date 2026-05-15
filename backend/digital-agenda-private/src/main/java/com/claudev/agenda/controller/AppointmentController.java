@@ -71,7 +71,7 @@ public class AppointmentController {
         String email = authentication.getName();
         User customer = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("Cliente non trovato"));
 
-        return ResponseEntity.ok(appointmentService.getAppointmentByCustomer(customer));
+        return ResponseEntity.ok(appointmentService.getAppointmentByCustomerOrder(customer));
     }
 
     // GET /api/appointments/professional-appointments
@@ -83,7 +83,7 @@ public class AppointmentController {
         User professional = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("Professionista non trovato"));
 
 
-        return  ResponseEntity.ok(appointmentService.getAppointmentByProfessional(professional));
+        return  ResponseEntity.ok(appointmentService.getAppointmentByProfessionalOrder(professional));
 
     }
 

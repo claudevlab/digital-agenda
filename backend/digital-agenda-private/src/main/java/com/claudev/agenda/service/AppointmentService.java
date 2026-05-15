@@ -147,6 +147,8 @@ public class AppointmentService {
 
     // GET lista appuntamenti customer
     // la logica sempre nel service in modo che trova la sessione hibernate aperta
+    // non viene piu' utilizzato - preferisco avere la lista appuntamenti ordinata per data non alfabetico
+    // lo lascio comunque implementato perche potrebbe tornare utile
     @Transactional(readOnly = true)
     public List<AppointmentResponseDTO> getAppointmentByCustomer(User customer) {
         return appointmentRepository.findByCustomer(customer).stream().map(appointmentMapper::toResponseDTO).toList();
@@ -154,6 +156,8 @@ public class AppointmentService {
 
     // GET lista appuntamenti professional
     // la logica sempre nel service in modo che trova la sessione hibernate aperta
+    // non viene piu' utilizzato - preferisco avere la lista appuntamenti ordinata per data non alfabetico
+    // lo lascio comunque implementato perche potrebbe tornare utile
     @Transactional(readOnly = true)
     public List<AppointmentResponseDTO> getAppointmentByProfessional(User professional) {
         return appointmentRepository.findByProfessional(professional).stream().map(appointmentMapper::toResponseDTO).toList();
@@ -273,6 +277,24 @@ public class AppointmentService {
                                 apt.getDurationMinutes() != null ? apt.getDurationMinutes() : 60)
                 })
                 .collect(Collectors.toList());
+    }
+
+    // GET lista appuntamenti customer
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseDTO> getAppointmentByCustomerOrder(User customer) {
+        return appointmentRepository.findByCustomerOrderByAppointmentDateTimeAsc(customer)
+                .stream()
+                .map(appointmentMapper::toResponseDTO)
+                .toList();
+    }
+
+    // GET lista appuntamenti professional
+    @Transactional(readOnly = true)
+    public List<AppointmentResponseDTO> getAppointmentByProfessionalOrder(User professional) {
+        return appointmentRepository.findByProfessionalOrderByAppointmentDateTimeAsc(professional)
+                .stream()
+                .map(appointmentMapper::toResponseDTO)
+                .toList();
     }
 
 }

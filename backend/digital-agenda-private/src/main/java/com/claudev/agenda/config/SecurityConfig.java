@@ -90,7 +90,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
                 "https://digital-agenda.it",
-                "https://www.digital-agenda.it"
+                "https://www.digital-agenda.it",
+                        "http://localhost:4200"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

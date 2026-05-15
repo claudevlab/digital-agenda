@@ -76,6 +76,14 @@ export class DashboardComponent implements OnInit {
     'SUNDAY': 'Domenica'
   };
 
+// ordina gli appuntamenti per data in modo ascendente
+private sortAppointmentsByDateAsc(list: AppointmentResponseDTO[]): AppointmentResponseDTO[] {
+return [...list].sort((a, b) =>
+new Date(a.appointmentDate as unknown as string).getTime() -
+new Date(b.appointmentDate as unknown as string).getTime()
+);
+}
+
   // viene chiamato quando il compoiennte e' stato creato
   ngOnInit() {
     console.log('=== ngOnInit dashboard ===');
@@ -163,7 +171,8 @@ export class DashboardComponent implements OnInit {
 
     next: (data: AppointmentResponseDTO[]) => {
         console.log('Appuntamenti ricevuti:', data);
-      this.appointments.set(data);
+        const sorted = this.sortAppointmentsByDateAsc(data);
+      this.appointments.set(sorted);
       this.isLoadingAppointments.set(false);
     },
     error: (err) => {
@@ -211,6 +220,7 @@ confirmReject() {
       // aggiorniamo la lista nel signal
       this.appointments.update(list => list.map(a => a.id == id ? updated : a));
       this.closeRejectModal();
+      this.appointments.set(this.appointments().filter(a => a.id != id)); // rimuove l'appuntamento rifiutato dalla lista
     },
       error: () => {
         this.appointmentError.set('Errore nel rifiuto appuntamento');
@@ -254,10 +264,14 @@ formatDateTime(dateTime: string): string {
   // Filtro attivo: null = tutti, 'PENDING' = in attesa, 'CONFIRMED' = confermati
   activeFilter: 'PENDING' | 'CONFIRMED' | null = null;
 
-  // Lista filtrata in base alla card cliccata
+  // Lista filtrata in base alla card cliccata e ordina per data ascendente (vedi metodo sortAppointmentsByDateAsc)
   get filteredAppointments(): AppointmentResponseDTO[] {
-    if (!this.activeFilter) return this.appointments();
-    return this.appointments().filter(a => a.appointmentStatus == this.activeFilter);
+    const base = this.appointments();
+    const filtered = !this.activeFilter
+    ? base
+    : base.filter (a => a.appointmentStatus === this.activeFilter);
+    
+    return this.sortAppointmentsByDateAsc(filtered);
 
   }
 
