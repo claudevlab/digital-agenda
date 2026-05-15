@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -102,74 +103,68 @@ public class ScheduleController {
 
     // mostriamo al frontend i slot disponibili e contrassegniamo quelli occupati
     @GetMapping("/available-slots")
-    public ResponseEntity <List<AvailableSlotDTO>> getAvailableSlots(
+    public ResponseEntity<List<AvailableSlotDTO>> getAvailableSlots(
             @RequestParam Long professionalId,
             @RequestParam String date,
-            @RequestParam(defaultValue = "60") int durationMinutes
-    ) {
-        // trova il prfosessionista
-        User profesional = userService.getUserById(professionalId).orElseThrow(() -> new RuntimeException("Professionsionista non trovato"));
+            @RequestParam(defaultValue = "60") int durationMinutes) {
+
+        logger.info("available-slots: professionalId={}, date={}, durationMinutes={}", professionalId, date, durationMinutes);
+
+        if (durationMinutes <= 0 || durationMinutes > 400) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        // trova il professionista
+        User professional = userService.getUserById(professionalId)
+                .orElseThrow(() -> new RuntimeException("Professionista non trovato"));
 
         // converti la data
         LocalDate localDate = LocalDate.parse(date);
 
-        // --- INIZIO FIX (APPROCCIO FAIL FAST) ---
-        // Se è un giorno di eccezione, ritorniamo subito una lista vuota.
-        if (scheduleExceptionService.isExceptionDate(profesional, localDate)) {
-            logger.info("Richiesta slot per il {}: è un giorno di eccezione per il professionista {}. Restituisco lista vuota.", localDate, professionalId);
+        // ---- controllo eccezioni di calendario (giorni esclusi) ----
+        if (scheduleExceptionService.isExceptionDate(professional, localDate)) {
+            logger.info("Richiesta slot per il {}: è un giorno di eccezione per il professionista {}. Restituisco lista vuota.",
+                    localDate, professionalId);
             return ResponseEntity.ok(new ArrayList<>());
         }
-        // --- FINE FIX ---
-
         DayOfWeek dayOfWeek = DayOfWeek.valueOf(localDate.getDayOfWeek().name());
 
-        // prendi gli slot del professionista di quel giorno
-        List<Schedule> schedules = scheduleService.getScheduleByUserAndDayOfWeek(profesional,dayOfWeek);
+        // prendi gli slot di disponibilità del professionista per quel giorno della settimana
+        List<Schedule> schedules = scheduleService.getScheduleByUserAndDayOfWeek(professional, dayOfWeek);
 
-        // ottieni i slot gia' occupati EDIT: con la durata
-        List<LocalDateTime[]> occupiedSlots = appointmentService.getOccupiedSlotsWithDuration(profesional,localDate);
+        // ottieni gli slot già occupati (start, end) per quella data
+        List<LocalDateTime[]> occupiedSlots = appointmentService.getOccupiedSlotsWithDuration(professional, localDate);
 
-        // Genera tutti gli slot e marca quelli occupati
         List<AvailableSlotDTO> result = new ArrayList<>();
-
 
         for (Schedule schedule : schedules) {
             LocalTime current = schedule.getStartTime();
             LocalTime end = schedule.getEndTime();
 
-            // crea uno slot ogni ora
             while (!current.plusMinutes(durationMinutes).isAfter(end)) {
                 LocalTime slotEnd = current.plusMinutes(durationMinutes);
 
-                // intervallo candidato slot
-                LocalDateTime slotStart_dt = localDate.atTime(current);
-                LocalDateTime slotEnd_dt = localDate.atTime(slotEnd);
+                LocalDateTime slotStartDateTime = localDate.atTime(current);
+                LocalDateTime slotEndDateTime = localDate.atTime(slotEnd);
 
-                // controlla se e' occupato
                 boolean isOccupied = occupiedSlots.stream().anyMatch(occupied -> {
                     LocalDateTime occStart = occupied[0];
                     LocalDateTime occEnd = occupied[1];
-                    // Due intervalli si sovrappongono se: start1 < end2 && end1 > start2
-
-                    return slotStart_dt.isBefore(occEnd) && slotEnd_dt.isAfter(occStart);
+                    // sovrapposizione: startSlot < endOcc && endSlot > startOcc
+                    return slotStartDateTime.isBefore(occEnd) && slotEndDateTime.isAfter(occStart);
                 });
 
-                // aggiungi lo slot alla lista con info se e' libero sia se e' occupato
-                result.add(new AvailableSlotDTO(current.toString().substring(0,5),
-                        slotEnd.toString().substring(0,5),
+                result.add(new AvailableSlotDTO(
+                        current.toString().substring(0, 5),
+                        slotEnd.toString().substring(0, 5),
                         !isOccupied
                 ));
 
-                // passa allo slot succesivo
                 current = slotEnd;
-
             }
         }
 
-        logger.info("Slot generati per professionista {} in data {} con durata {}min: {}", professionalId, date , durationMinutes, result.size());
         return ResponseEntity.ok(result);
-
-
     }
 
 
