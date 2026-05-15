@@ -26,4 +26,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
             LocalDateTime start,
             LocalDateTime end
     );
+
+    // NEW: appuntamenti di un professionista ordinati per data/ora crescente
+    List<Appointment> findByProfessionalOrderByAppointmentDateTimeAsc(User professional);
+
+    //  appuntamenti di un customer ordinati per data/ora
+    List<Appointment> findByCustomerOrderByAppointmentDateTimeAsc(User customer);
 }
