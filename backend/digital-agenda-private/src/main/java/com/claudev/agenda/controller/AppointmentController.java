@@ -10,11 +10,16 @@ import com.claudev.agenda.service.AppointmentService;
 import com.claudev.agenda.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +79,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentByCustomerOrder(customer));
     }
 
+
     // GET /api/appointments/professional-appointments
     // Il professionista vede i propri appuntamenti
     @GetMapping("/professional-appointments")
@@ -82,8 +88,26 @@ public class AppointmentController {
         String email = authentication.getName();
         User professional = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("Professionista non trovato"));
 
+        return  ResponseEntity.ok(appointmentService.getActiveAppointment(professional));
 
-        return  ResponseEntity.ok(appointmentService.getAppointmentByProfessionalOrder(professional));
+    }
+
+
+
+    // NEW endpoint per gli appuntamenti storici (passati)
+    @GetMapping("professional-appointments/historical")
+    public ResponseEntity<Slice<AppointmentResponseDTO>> getHistoricalAppointments (
+        Authentication authentication,
+        @RequestParam (defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+        String email = authentication.getName();
+        User professional = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("Professionista non trovato"));
+
+        // creazione oggetto pageable da mandare al service del frontend
+        Pageable pageable = PageRequest.of(page,size);
+
+        return ResponseEntity.ok(appointmentService.getHistoricalAppointment(professional,pageable));
 
     }
 
@@ -104,6 +128,13 @@ public class AppointmentController {
         appointmentService.cancelAppointment(id);
         return ResponseEntity.noContent().build();
     }
+
+    // TO DO facoltativo
+    /*
+    Per pulire ulteriormente il codice potremmo in seguito
+    creare un metodo privato nel controller private User getAuthenticatedUser(Authentication auth)
+    oppure creare un annotazione custom @CurrentUser per iniettare direttamente l'oggetto User nei parametri del controller.
+     */
 
 
 

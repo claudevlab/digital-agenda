@@ -31,6 +31,20 @@
     </small>
   </div>
 
+  <!-- Card Storici — cliccabile, apre/chiude la sezione -->
+<div class="stat-card stat-card--historical"
+     [class.stat-card--active]="showHistorical()"
+     (click)="toggleHistorical()"
+     style="cursor:pointer">
+  <h3>Trascorsi</h3>
+  <p class="stat-number">
+    {{ historicalTotalElements() > 0 ? historicalTotalElements() : '—' }}
+  </p>
+  <small class="stat-hint">
+    {{ showHistorical() ? '✕ Chiudi storico' : 'Clicca per vedere' }}
+  </small>
+</div>
+
 </div>
 
 
@@ -143,6 +157,90 @@
     }
   </div>
 </div>
+
+<!-- STORICO APPUNTAMENTI -->
+@if (showHistorical()) {
+  <div class="appointments-section mt-3">
+    <div class="card">
+      <div class="section-header">
+        <h3> Appuntamenti Trascorsi</h3>
+        <small class="text-muted">Appuntamenti precedenti a oggi</small>
+      </div>
+
+      @if (historicalError()) {
+        <div class="alert-danger">{{ historicalError() }}</div>
+      }
+
+      @if (historicalAppointments().length === 0 && !isLoadingHistorical()) {
+        <div class="empty-state">
+          <p>Nessun appuntamento storico trovato.</p>
+        </div>
+      }
+
+      @if (historicalAppointments().length > 0) {
+        <div class="appointment-list">
+          @for (apt of historicalAppointments(); track apt.id) {
+            <div class="appointment-item apt-historical">
+
+              <div class="apt-client">
+                <div class="apt-avatar bg-secondary text-white">
+                  {{ apt.customerName.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <strong>{{ apt.customerName }}</strong>
+                  <small class="d-block text-muted">Cliente</small>
+                </div>
+              </div>
+
+              <div class="apt-datetime">
+                <i class="bi bi-calendar-check me-1"></i>
+                {{ formatDateTime(apt.appointmentDate) }}
+                <small class="d-block text-muted">{{ apt.durationMinutes }} min</small>
+              </div>
+
+              <div class="apt-notes">
+                @if (apt.notes) {
+                  <span><i class="bi bi-chat-left-text me-1"></i>{{ apt.notes }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </div>
+
+              <div class="apt-status">
+                <span [class]="'apt-badge ' + getStatusClass(apt.appointmentStatus)">
+                  {{ getStatusLabel(apt.appointmentStatus) }}
+                </span>
+              </div>
+
+              <!-- Nessuna azione sugli storici: sono read-only -->
+              <div class="apt-actions">
+                <span class="text-muted small fst-italic">Archiviato</span>
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <!-- Lazy Load: bottone "Carica altri" -->
+        <div class="text-center mt-3 mb-2">
+          @if (isLoadingHistorical()) {
+            <span class="text-muted"><i class="bi bi-hourglass-split me-1"></i>Caricamento...</span>
+          } @else if (historicalHasMore()) {
+            <button class="btn-refresh" (click)="loadMoreHistorical()">
+              <i class="bi bi-arrow-down-circle me-1"></i>
+              Carica altri ({{ historicalAppointments().length }} / {{ historicalTotalElements() }})
+            </button>
+          } @else {
+            <small class="text-muted">
+              <i class="bi bi-check-all me-1"></i>Tutti gli appuntamenti trascorsi caricati ({{ historicalTotalElements() }})
+            </small>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+}
 
 <!-- SLOT SETTIMANALI -->
 <div class="appointments-section mt-3">

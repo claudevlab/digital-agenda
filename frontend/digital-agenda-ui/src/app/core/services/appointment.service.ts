@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AppointmentRequestDTO, AppointmentResponseDTO } from '../models/appointment.model';
+import { AppointmentRequestDTO, AppointmentResponseDTO, PagedResponse } from '../models/appointment.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -31,6 +31,13 @@ export class AppointmentService {
     return this.http.get<AppointmentResponseDTO[]>(`${this.apiUrl}/professional-appointments`);
   }
 
+  // Aggiungilo al service esistente, accanto a getProfessionalAppointments()
+getHistoricalAppointments(page: number = 0, size: number = 10): Observable<PagedResponse<AppointmentResponseDTO>> {
+  return this.http.get<PagedResponse<AppointmentResponseDTO>>(
+    `${this.apiUrl}/professional-appointments/historical?page=${page}&size=${size}`
+  );
+}
+
   // PUT /api/appointments/{id}/status?status=CONFIRMED|CANCELLED
   // Professionista: accetta o rifiuta
   updateAppointmentStatus(id: number, status: 'CONFIRMED' | 'REJECTED', reasonRejected?: string): Observable<AppointmentResponseDTO> {
@@ -48,4 +55,6 @@ export class AppointmentService {
   cancelAppointment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+
 }
