@@ -243,3 +243,26 @@
     overflow-wrap: anywhere;      // il testo lungo va a capo, non esce dal box
   }
 }
+
+// Aggiunta al tuo dashboard.component.scss
+
+// Card storico nella stats-grid
+.stat-card--historical {
+  border-left: 4px solid #6c757d;
+
+  &.stat-card--active {
+    background-color: #f0f0f0;
+    border-left-color: #343a40;
+  }
+}
+
+// Righe storiche: aspetto "dimmed" per distinguerle dagli attivi
+.apt-historical {
+  opacity: 0.75;
+  background-color: #f8f9fa;
+  border-left: 3px solid #adb5bd !important;
+
+  &:hover {
+    opacity: 1;
+  }
+}
