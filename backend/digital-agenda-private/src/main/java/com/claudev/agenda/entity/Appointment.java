@@ -10,9 +10,6 @@ import java.util.Objects;
 @Table(name = "appointments")
 public class Appointment {
 
-    /*
-                              APPUNTAMENTI
-     */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
