@@ -20,3 +20,12 @@ export interface AppointmentResponseDTO {
   customerEmail: string;
   customerPhone: string;
 }
+
+// Aggiunta al file esistente
+export interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;       // pagina corrente (0-based)
+  last: boolean;        // true se è l'ultima pagina
+}

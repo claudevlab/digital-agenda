@@ -65,6 +65,61 @@ export class DashboardComponent implements OnInit {
   // contatore appuntamenti confirmed
   confirmedCount = computed(() => this.appointments().filter(a => a.appointmentStatus === 'CONFIRMED').length);
 
+  // --- STORICI---
+showHistorical = signal(false);               // toggle sezione storico
+historicalAppointments = signal<AppointmentResponseDTO[]>([]); // lista accumulata
+isLoadingHistorical = signal(false);
+historicalError = signal('');
+historicalCurrentPage = signal(0);
+historicalHasMore = signal(true);             // false quando siamo all'ultima pagina
+historicalTotalElements = signal(0);
+
+readonly HISTORICAL_PAGE_SIZE = 10; 
+
+// Apre la sezione e carica la prima pagina (solo al primo click)
+toggleHistorical(): void {
+  const isOpen = this.showHistorical();
+  this.showHistorical.set(!isOpen);
+
+  // Carica solo se stiamo aprendo E non abbiamo già dati
+  if (!isOpen && this.historicalAppointments().length === 0) {
+    this.loadHistoricalPage(0);
+  }
+}
+
+// Carica una pagina specifica e ACCODA i risultati (lazy append)
+loadHistoricalPage(page: number): void {
+  if (this.isLoadingHistorical()) return; // evita doppia chiamata
+
+  this.isLoadingHistorical.set(true);
+  this.historicalError.set('');
+
+  this.appointmentService.getHistoricalAppointments(page, this.HISTORICAL_PAGE_SIZE)
+    .subscribe({
+      next: (response) => {
+        // Accoda i nuovi risultati a quelli già presenti
+        this.historicalAppointments.update(list => [...list, ...response.content]);
+        this.historicalCurrentPage.set(response.number);
+        this.historicalHasMore.set(!response.last);
+        this.historicalTotalElements.set(response.totalElements);
+        this.isLoadingHistorical.set(false);
+      },
+      error: () => {
+        this.historicalError.set('Impossibile caricare gli appuntamenti storici.');
+        this.isLoadingHistorical.set(false);
+      }
+    });
+}
+
+// Chiamato dal bottone "Carica altri"
+loadMoreHistorical(): void {
+  if (this.historicalHasMore()) {
+    this.loadHistoricalPage(this.historicalCurrentPage() + 1);
+  }
+}
+
+
+
   // mappatura dei giorni
   dayLabels: Record<string, string> = {
     'MONDAY': 'Lunedì',
@@ -264,16 +319,22 @@ formatDateTime(dateTime: string): string {
   // Filtro attivo: null = tutti, 'PENDING' = in attesa, 'CONFIRMED' = confermati
   activeFilter: 'PENDING' | 'CONFIRMED' | null = null;
 
-  // Lista filtrata in base alla card cliccata e ordina per data ascendente (vedi metodo sortAppointmentsByDateAsc)
-  get filteredAppointments(): AppointmentResponseDTO[] {
-    const base = this.appointments();
-    const filtered = !this.activeFilter
-    ? base
-    : base.filter (a => a.appointmentStatus === this.activeFilter);
-    
-    return this.sortAppointmentsByDateAsc(filtered);
+  // esclude gli appuntamenti passati dalla lista principale
+ get filteredAppointments(): AppointmentResponseDTO[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // mezzanotte
 
-  }
+  const base = this.appointments().filter(a => {
+    const aptDate = new Date(a.appointmentDate as unknown as string);
+    return aptDate >= today; // esclude tutto ciò che è prima di oggi
+  });
+
+  const filtered = !this.activeFilter
+    ? base
+    : base.filter(a => a.appointmentStatus === this.activeFilter);
+
+  return this.sortAppointmentsByDateAsc(filtered);
+}
 
     // Toggle: click sulla stessa card deseleziona il filtro
     setFilter(filter: 'PENDING' | 'CONFIRMED') : void {

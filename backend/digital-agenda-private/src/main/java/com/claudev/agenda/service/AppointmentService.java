@@ -11,6 +11,8 @@ import com.claudev.agenda.enums.EmailType;
 import com.claudev.agenda.mapper.AppointmentMapper;
 import com.claudev.agenda.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,6 +147,7 @@ public class AppointmentService {
         return appointmentSaved;
     }
 
+    /*
     // GET lista appuntamenti customer
     // la logica sempre nel service in modo che trova la sessione hibernate aperta
     // non viene piu' utilizzato - preferisco avere la lista appuntamenti ordinata per data non alfabetico
@@ -162,6 +165,8 @@ public class AppointmentService {
     public List<AppointmentResponseDTO> getAppointmentByProfessional(User professional) {
         return appointmentRepository.findByProfessional(professional).stream().map(appointmentMapper::toResponseDTO).toList();
     }
+
+     */
 
     // PUT cambio dello stato appuntamento
     @Transactional
@@ -279,7 +284,9 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+
     // GET lista appuntamenti customer
+
     @Transactional(readOnly = true)
     public List<AppointmentResponseDTO> getAppointmentByCustomerOrder(User customer) {
         return appointmentRepository.findByCustomerOrderByAppointmentDateTimeAsc(customer)
@@ -288,6 +295,8 @@ public class AppointmentService {
                 .toList();
     }
 
+    /*
+    // NON SERVE Piu`
     // GET lista appuntamenti professional
     @Transactional(readOnly = true)
     public List<AppointmentResponseDTO> getAppointmentByProfessionalOrder(User professional) {
@@ -296,6 +305,32 @@ public class AppointmentService {
                 .map(appointmentMapper::toResponseDTO)
                 .toList();
     }
+
+     */
+    // NEW filtra gli appuntamenti per attivo
+    @Transactional (readOnly = true)
+    public List<AppointmentResponseDTO>  getActiveAppointment (User professional) {
+        // la discriminante é la mezzanotte della data odierna
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+
+        return appointmentRepository.findActiveAppointment(professional ,today)
+                .stream()
+                .map(appointmentMapper::toResponseDTO)
+                .toList();
+    }
+
+    // NEW filtra gli appuntamenti per storici (passati)
+    @Transactional(readOnly = true)
+    public Slice<AppointmentResponseDTO> getHistoricalAppointment (User professional , Pageable pageable) {
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+
+        // non c'é bisogno di .stream perché pageable ha giá integrato un metodo map per convertire le entity in dto
+        return  appointmentRepository.findHistoricalAppointmentAppointments(professional,today,pageable)
+                .map(appointmentMapper::toResponseDTO);
+    }
+
+
+
 
 }
 
