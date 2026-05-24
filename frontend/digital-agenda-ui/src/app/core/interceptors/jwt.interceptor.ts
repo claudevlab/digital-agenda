@@ -12,7 +12,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
     console.log('Interceptor URL:', req.url, '| Token:', token ? 'PRESENTE' : 'ASSENTE');
 
-    // Aggiungiamo il token SOLO se c'è un token e NON stiamo chiamando login/register
+    // Aggiungiamo l'header SOLO se c'è un token e NON stiamo chiamando login/register
   if (token && typeof token === 'string' && token.trim() !== '' && !isAuthUrl) {
     req = req.clone({
       setHeaders: {

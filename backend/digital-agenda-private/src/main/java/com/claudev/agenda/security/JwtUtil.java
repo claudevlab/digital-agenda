@@ -15,9 +15,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Chiave segreta (in produzione mettila in application.properties!)
-    //private static final String SECRET_STRING = "questa_e_una_chiave_segreta_molto_lunga_e_complicata_che_serve_per_superare_i_test_di_sicurezza_2026";
-
+    // Chiave segreta (locale --> application-local.properties -- produzione --> variabili d'ambiente)
     private final SecretKey key;
     private final long jwtExpiration;
 
@@ -69,9 +67,11 @@ public class JwtUtil {
     }
 
     // genera un nuovo token`aggiungendo nome ,data di creazione e scadenza firmando con la chiave segreta
-    public String generateToken (String username ) {
+    // TO DO
+    public String generateToken (String username , String role ) {
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(key)
@@ -83,6 +83,11 @@ public class JwtUtil {
     public boolean validateToken(String token , String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    // estrai role
+    public String extractRole(String token) {
+        return extractClaime(token, claims -> claims.get("role", String.class));
     }
 
 }

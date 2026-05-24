@@ -7,31 +7,33 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 /*
 "OncePerRequestFilter" --> fa' il controllo una sola volta
-es. buttafuori che ti da' il bracciale per poter entrare uscire dal locale per tutta la durta dell'evento ,
+es. buttafuori che ti da' il bracciale per poter entrare uscire dal locale per tutta la durata dell'evento ,
 senza che ti chiede ogni volta il biglietto
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlackListService tokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService , TokenBlackListService tokenBlackListService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.tokenBlacklistService = tokenBlackListService;
     }
 
     @Override
@@ -56,6 +58,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2 - Estrazione del token
         jwt = authHeader.substring(7); // esclusa la parola Bearer + spazio
 
+        if (tokenBlacklistService.isBlacklisted(jwt)) {
+            logger.warn( "=== TOKEN REVOCATO RIVELATO ===");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Token revocato. Effettua nuovamente il login.\"}");
+            return;
+        }
+
         // 3 - estrae l'email dal token
         try {
             userEmail = jwtUtil.extractUsername(jwt);
@@ -70,15 +80,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 4 - se abbiamo l'emai ma l'utente non risulta loggato
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // carica l'utente nel DB
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            // NEW: Leggiamo il ruolo direttamente dal token — nessuna query DB aggiuntiva
+            String role = jwtUtil.extractRole(jwt);
 
-            // 5 - se il toke e' valido dai l'accesso
-            if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails ,
-                        null,
-                        userDetails.getAuthorities());
+            // Costruiamo l'authority dal claim del token
+            List<SimpleGrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_" + role)
+            );
+
+            // NON serve più caricare l'utente dal DB solo per le authorities - piú prestazioni
+            if (jwtUtil.validateToken(jwt, userEmail)) {
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userEmail,   // principal: email come stringa
+                                null,
+                                authorities
+                        );
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -87,7 +104,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // passa al prossimo giltro
+        // passa al prossimo filtro
         filterChain.doFilter(request,response);
 
 

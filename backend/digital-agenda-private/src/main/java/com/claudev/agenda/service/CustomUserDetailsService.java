@@ -1,4 +1,4 @@
-package com.claudev.agenda.security;
+package com.claudev.agenda.service;
 
 import com.claudev.agenda.entity.User;
 import com.claudev.agenda.repository.UserRepository;

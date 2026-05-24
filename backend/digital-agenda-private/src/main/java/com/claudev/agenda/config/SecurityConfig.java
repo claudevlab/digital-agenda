@@ -1,6 +1,7 @@
 package com.claudev.agenda.config;
 
-import com.claudev.agenda.security.CustomUserDetailsService;
+import com.claudev.agenda.security.TokenBlackListService;
+import com.claudev.agenda.service.CustomUserDetailsService;
 import com.claudev.agenda.security.JwtAuthenticationFilter;
 import com.claudev.agenda.security.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -21,14 +23,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity // per configurare spring security
+//@EnableScheduling
 public class SecurityConfig {
 
 
@@ -37,16 +37,19 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final AppConfig appConfig;
 
+
     @Value("${app.allowed-origins:http://localhost:4200}")
     private String[] allowedOrigins;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter,
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-                          AppConfig appConfig) {
+                          AppConfig appConfig
+                         ) {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.appConfig = appConfig;
+
     }
 
     /*
@@ -105,10 +108,12 @@ public class SecurityConfig {
     }
 
 
-
     @Bean
     public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
         http
+                // CSRF disabilitato intenzionalmente: autenticazione stateless via JWT Bearer token.
+                // Il token è in localStorage (non in cookie), quindi non è vulnerabile ad attacchi CSRF.
+                // Se in futuro si passa a cookie HttpOnly, riabilitare CSRF con CookieCsrfTokenRepository.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
@@ -142,7 +147,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // bean che dice a SPring come verificare le credenziali
+    // bean che dice a Spring come verificare le credenziali
     @Bean
     public AuthenticationProvider authenticationProvider () {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(customUserDetailsService); // utilizza il mio custoUserService per caricare gli utenti

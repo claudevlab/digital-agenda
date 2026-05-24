@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, User } from '../models/auth.model';
 import { tap } from 'rxjs';
 
-
+// Il servizio di autenticazione gestisce tutte le operazioni legate all'autenticazione, come login, logout, registrazione e gestione del token. Utilizza HttpClient per comunicare con il backend e signal per mantenere lo stato dell'utente connesso in modo reattivo.
 @Injectable({
   providedIn: 'root'
 })
@@ -16,6 +16,7 @@ export class AuthService {
   // all'accesso segna l'user e lo cancella all'uscita
   currentUser = signal<User | null>(null); // user non e' quello del backend lo definisce il server
 
+  // http client per fare le chiamate al backend. E il postino che consegna le richieste al server
   constructor(private http: HttpClient) {
     this.checkInitialAuth();
   }
@@ -25,7 +26,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(tap(response => {
       // response e' l'intero oeggetto in JSON quindi id,user, email.ecc
       // pipe-> prima di completare l'operazione fai questo
-      // tap guarda ma senza modificarla
+      // tap guarda ma senza modificarla osservatore di RxJS che ci permette di eseguire un'azione quando riceviamo la risposta, senza modificare i dati che passano attraverso l'osservabile. In questo caso, stiamo usando tap per salvare il token e le informazioni dell'utente quando riceviamo la risposta dal server dopo un login riuscito.
       // quando il login ha successo, salviamo l'utente
       localStorage.setItem('jwt_token', response.token);
 
@@ -38,6 +39,7 @@ export class AuthService {
         phoneNumber: response.phoneNumber
       };
 
+      // locaStorgae é un meccanismo di storage del browser che permette di salvare dati in modo persistente. In questo caso, stiamo salvando le informazioni dell'utente come stringa JSON sotto la chiave 'user'. Questo ci permette di mantenere le informazioni dell'utente anche dopo un refresh della pagina o una chiusura del browser, finché non viene effettuato il logout.
       localStorage.setItem('user', JSON.stringify(user));
       this.currentUser.set(user);
     })
@@ -68,10 +70,10 @@ export class AuthService {
     const role = payload.role;
     let endpoint = '';
 
-    // Facciamo UNA SOLA copia del payload per non modificare l'originale
-    // e rimuoviamo subito il ruolo
+    // Facciamo UNA SOLA copia del payload per non modificare l'originale escludendo il ruolo
     const { role: _, ...dataToSend } = payload; 
 
+    // pattern comune - stesso from sue endpoint diversi a seconda del ruolo
     if (role === 'CLIENT') {
       endpoint = `${this.apiUrl}/register/customer`;
 

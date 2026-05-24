@@ -22,6 +22,7 @@ target/
 
 # --- IDE (IntelliJ, Eclipse, VS Code) ---
 .idea/
+.idea-working/
 *.iws
 *.iml
 *.ipr
@@ -48,4 +49,7 @@ Desktop.ini
 
 # --- DOCUMENTAZIONE ---
 HELP.md
+
+# Repository temporanei
+repo-clean.git/
 

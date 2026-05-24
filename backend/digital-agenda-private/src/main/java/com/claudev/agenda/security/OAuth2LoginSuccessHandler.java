@@ -67,7 +67,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
   */
 
          // genera token jwt
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail() , user.getRole().name());
 
         //reindirizzamento al frontend con il token nell'URL
         // in produzione si utilizzano i cookie o un redirect sicuro , per ora lascio cosi ---TO DO

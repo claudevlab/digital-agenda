@@ -4,9 +4,15 @@ import com.claudev.agenda.dto.*;
 import com.claudev.agenda.entity.User;
 import com.claudev.agenda.enums.Role;
 import com.claudev.agenda.mapper.UserMapper;
+import com.claudev.agenda.security.JwtAuthenticationFilter;
 import com.claudev.agenda.security.JwtUtil;
+import com.claudev.agenda.security.TokenBlackListService;
 import com.claudev.agenda.service.UserService;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,16 +32,23 @@ public class AuthController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private  final TokenBlackListService tokenBlackListService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     // nuove dipendenze per il login
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public AuthController(UserService userService , UserMapper userMapper ,AuthenticationManager authenticationManager , JwtUtil jwtUtil) {
+    public AuthController(UserService userService ,
+                          UserMapper userMapper ,
+                          AuthenticationManager authenticationManager ,
+                          JwtUtil jwtUtil,
+                          TokenBlackListService tokenBlackListService) {
         this.userService = userService;
         this.userMapper = userMapper;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.tokenBlackListService = tokenBlackListService;
     }
 
     // customer regisration /api/auth/register/customer
@@ -67,7 +82,7 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> login (@Valid @RequestBody UserLoginDTO userLoginDTO) {
 
         // deleghiamo a spring security il controllo password
-        // se la password non e' corretta lancera' un eccezione (BadCredentialException)
+        // se la password non e' corretta lancerá un eccezione (BadCredentialException)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userLoginDTO.getEmail(),userLoginDTO.getPassword())
         );
@@ -78,7 +93,7 @@ public class AuthController {
 
         // arrivato a questo punto vuol dire che le credenziali sono corrette
         // Dunque generiamo il token
-        String token = jwtUtil.generateToken(userLoginDTO.getEmail());
+        String token = jwtUtil.generateToken(userLoginDTO.getEmail(), user.getRole().name());
 
         // Restituisce il DTO completo (non solo il token!)
         AuthResponseDTO response = new AuthResponseDTO(
@@ -88,7 +103,7 @@ public class AuthController {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole().name(),
-                user.getPhoneNumber()// converte l'enum in stringa
+                user.getPhoneNumber()
         );
 
         return ResponseEntity.ok(response);
@@ -100,16 +115,27 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword (
             @Valid @RequestBody
             ForgotPasswordRequestDTO requestDTO) {
+
+        long startTime = System.currentTimeMillis();
+
                 try {
                     userService.generatePasswordResetToken(requestDTO.getEmail());
-                    // Rispondiamo sempre con 200 OK anche se l'email non esiste, per motivi di sicurezza
-                    // (evita attacchi di "User Enumeration") ma nel nostro Service lanciamo un'eccezione
-                    // ai puo' gestire con un @ExceptionHandler globale.
-                    // Per ora mandiamo un semplice messaggio di successo.
-                    return ResponseEntity.ok("Se l'email esiste nel sistema, riceverai un link per reimpostare la password.");
                 } catch (RuntimeException e) {
-                    return  ResponseEntity.badRequest().body(e.getMessage());
+                    // log interno
+                    logger.warn("Tentativo di reset password di una mail inesistente");
     }
+
+        // Forziamo sempre almeno 500ms di risposta per evitare timing attack
+        long elapsed = System.currentTimeMillis() - startTime;
+        long minDelay = 500L;
+        if (elapsed < minDelay) {
+            try {
+                Thread.sleep(minDelay - elapsed);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return  ResponseEntity.ok("Se l'email esiste riceverai un link per reimpostare la password");
 
 }
 
@@ -117,12 +143,20 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword (@Valid @RequestBody
                                             ResetPasswordRequestDTO requestDTO) {
-        try {
             userService.resetPassword(requestDTO.getToken(),requestDTO.getNewPassword());
             return ResponseEntity.ok("Password aggiornata con successo. Ora puoi accedere.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
         }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            Date expiration = jwtUtil.extractClaime(token, Claims::getExpiration);
+            tokenBlackListService.blacklistToken(token, expiration);
+        }
+        return ResponseEntity.ok("Logout effettuato con successo.");
+    }
     }
 
-}
+

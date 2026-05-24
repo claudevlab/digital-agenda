@@ -7,6 +7,8 @@ import com.claudev.agenda.dto.UserProfessionalResponseDTO;
 import com.claudev.agenda.entity.User;
 import com.claudev.agenda.enums.EmailType;
 import com.claudev.agenda.enums.Role;
+import com.claudev.agenda.exception.InvalidTokenException;
+import com.claudev.agenda.exception.TokenExpiredException;
 import com.claudev.agenda.mapper.UserMapper;
 import com.claudev.agenda.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -159,11 +161,11 @@ public class UserService {
     public void resetPassword (String token , String newPassword) {
         // 1. Cerchiamo l'utente tramite il token
         User user = userRepository.findByResetPasswordToken(token)
-                .orElseThrow(() -> new RuntimeException("Token non valido o inesistente."));
+                .orElseThrow(() -> new InvalidTokenException("Token non valido o inesistente."));
 
         // 2 - controlle del token che non sia scaduto
         if (user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw  new RuntimeException("Il link di reset è scaduto. Richiedine uno nuovo.");
+            throw  new TokenExpiredException("Il link di reset è scaduto. Richiedine uno nuovo.");
         }
 
         // 3 - aggiorniamo la password criptandola
