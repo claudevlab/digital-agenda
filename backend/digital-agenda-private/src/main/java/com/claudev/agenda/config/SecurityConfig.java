@@ -1,6 +1,6 @@
 package com.claudev.agenda.config;
 
-import com.claudev.agenda.security.TokenBlackListService;
+
 import com.claudev.agenda.service.CustomUserDetailsService;
 import com.claudev.agenda.security.JwtAuthenticationFilter;
 import com.claudev.agenda.security.OAuth2LoginSuccessHandler;
@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,6 +25,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
+import static org.springframework.web.servlet.function.RequestPredicates.headers;
 
 @Configuration
 @EnableWebSecurity // per configurare spring security
@@ -91,11 +93,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(
+        configuration.setAllowedOrigins(List.of(
                 "https://digital-agenda.it",
                 "https://www.digital-agenda.it",
-                        "http://localhost:4200"
+                "http://localhost:4200"
         ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
@@ -116,6 +119,29 @@ public class SecurityConfig {
                 // Se in futuro si passa a cookie HttpOnly, riabilitare CSRF con CookieCsrfTokenRepository.
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives(
+                                        "default-src 'self'; " +
+                                                "script-src 'self'; " +
+                                                "style-src 'self' 'unsafe-inline'; " +
+                                                "img-src 'self' data:; " +
+                                                "font-src 'self'; " +
+                                                "connect-src 'self' https://digital-agenda.it; " +
+                                                "frame-ancestors 'none'; " +
+                                                "base-uri 'self'; " +
+                                                "form-action 'self'"
+                                )
+                        )
+
+                        .frameOptions(frame -> frame.deny())
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(31536000)
+                                .includeSubDomains(true)
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
@@ -142,6 +168,11 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         // Quando il login ha successo, Spring chiamerà questo handler
                         .successHandler(oAuth2LoginSuccessHandler)
+
+
+
+
+
                 );
 
         return http.build();
@@ -159,6 +190,8 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+
 
 
 }

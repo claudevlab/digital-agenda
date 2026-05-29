@@ -31,4 +31,5 @@ export class ScheduleExceptionService {
   Observable<void> {
     return this.http.delete<void> (`${this.apiUrl}/${id}`);
   }
+
 }

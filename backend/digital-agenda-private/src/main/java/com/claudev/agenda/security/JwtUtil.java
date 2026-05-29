@@ -28,9 +28,9 @@ public class JwtUtil {
     // EDIT DEVOPS iniettiamo i valori dall'application properties
     public  JwtUtil(
             @Value("${jwt.secret}") String secretString,
-            @Value("${jwt.expiration:36000000}") long jwtExpiration ) {
+            @Value("${jwt.expiration:1800000}") long jwtExpiration ) {
 
-        if(secretString.length() < 32) {
+        if(secretString.length() < 64) {
             throw  new IllegalArgumentException("JWT deve essere almeno di 32 caratteri!");
         }
 

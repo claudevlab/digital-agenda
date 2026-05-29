@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { LoginRequest } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -13,9 +14,10 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  // servizi che usano la funzine inject() 
-  private formBuilder = inject(FormBuilder);
-  private authService = inject(AuthService)
+  // servizi che usano la funzione inject() 
+  // NEW nonNullable per evitare di dover gestire il caso null in tutto il componente
+  private formBuilder = inject(FormBuilder).nonNullable;
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   googleLoginUrl = environment.apiUrl + '/oauth2/authorization/google';
@@ -26,11 +28,10 @@ export class LoginComponent {
   // Signal per mostrare eventuali errori dal server
   errorMessage = signal('');
 
-  // creazione del Reactive Form con validazioni
+  // NEW : form tipizzato 
   loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
-
   });
 
   // getter per comodita' nell HTML
@@ -50,9 +51,9 @@ export class LoginComponent {
 
 
     // estraggo i dati validati
-    const credentials = {
-      email: this.loginForm.value.email as string,
-      password: this.loginForm.value.password as string
+    const credentials : LoginRequest = {
+      email: this.loginForm.value.email!,
+      password: this.loginForm.value.password!
     };
 
     // chiamo l'API dal backend
@@ -69,11 +70,20 @@ export class LoginComponent {
       },
 
       error: (err) => {
-        this.isLoading.set(false);
-        // gestione errore base
-        this.errorMessage.set('Credenziali non valide. Riprova');
-        console.error('Errore di login', err);
-      }
+  this.isLoading.set(false);
+  
+  // Distingue tipo di errore
+  if (err.status === 401) {
+    this.errorMessage.set('Credenziali non valide. Riprova');
+  } else if (err.status === 500) {
+    this.errorMessage.set('Errore server. Riprova più tardi');
+  } else if (err.name === 'NetworkError') {
+    this.errorMessage.set('Connessione internet assente');
+  } else {
+    this.errorMessage.set('Si è verificato un errore imprevisto');
+  }
+
+}
     });
 
 

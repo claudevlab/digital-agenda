@@ -2,7 +2,8 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginRequest, User } from '../models/auth.model';
-import { tap } from 'rxjs';
+import { tap , catchError, Observable} from 'rxjs';
+import { Router } from '@angular/router';
 
 // Il servizio di autenticazione gestisce tutte le operazioni legate all'autenticazione, come login, logout, registrazione e gestione del token. Utilizza HttpClient per comunicare con il backend e signal per mantenere lo stato dell'utente connesso in modo reattivo.
 @Injectable({
@@ -15,6 +16,7 @@ export class AuthService {
   // utilizziamo la libreria signal (per gestire l'utente connesso in modo piu' reattivo)
   // all'accesso segna l'user e lo cancella all'uscita
   currentUser = signal<User | null>(null); // user non e' quello del backend lo definisce il server
+  router: any;
 
   // http client per fare le chiamate al backend. E il postino che consegna le richieste al server
   constructor(private http: HttpClient) {
@@ -22,48 +24,58 @@ export class AuthService {
   }
 
   // controlla gli accessi
-  login(credentials: LoginRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(tap(response => {
-      // response e' l'intero oeggetto in JSON quindi id,user, email.ecc
-      // pipe-> prima di completare l'operazione fai questo
-      // tap guarda ma senza modificarla osservatore di RxJS che ci permette di eseguire un'azione quando riceviamo la risposta, senza modificare i dati che passano attraverso l'osservabile. In questo caso, stiamo usando tap per salvare il token e le informazioni dell'utente quando riceviamo la risposta dal server dopo un login riuscito.
-      // quando il login ha successo, salviamo l'utente
-      localStorage.setItem('jwt_token', response.token);
-
-      const user: User = {
-        id: response.id,
-        email: response.email,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        role: response.role,
-        phoneNumber: response.phoneNumber
-      };
-
-      // locaStorgae é un meccanismo di storage del browser che permette di salvare dati in modo persistente. In questo caso, stiamo salvando le informazioni dell'utente come stringa JSON sotto la chiave 'user'. Questo ci permette di mantenere le informazioni dell'utente anche dopo un refresh della pagina o una chiusura del browser, finché non viene effettuato il logout.
-      localStorage.setItem('user', JSON.stringify(user));
-      this.currentUser.set(user);
-    })
+  login(credentials: LoginRequest) { 
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+      tap(response => {
+        
+        //  SALVA TOKEN in localStorage -- da disabilitare se vuoi implementare httpOnly
+        localStorage.setItem('jwt_token', response.token);
+        
+        const user: User = {
+          id: response.id,
+          email: response.email,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          role: response.role,
+          phoneNumber: response.phoneNumber
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));  // Solo dati user, NON token
+        this.currentUser.set(user);
+      })
     );
   }
 
+
   // al logout cancella il token 
-  logout() {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user');
-    this.currentUser.set(null);
+ // LOGOUT: Backend cancella cookie automaticamente
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+      tap(() => {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('user');  // Cancella solo dati user
+        this.currentUser.set(null);
+        this.router.navigate(['/login']);
+      })
+    );
   }
+  
+
 
   // ottiene il token
   getToken(): string | null {
     return localStorage.getItem('jwt_token');
   }
 
-  checkInitialAuth() {
-    // recuper utente se ricarica la pagina
+ checkInitialAuth() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.currentUser.set(JSON.parse(savedUser));
     }
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUser();
   }
 
     register(payload: any) {

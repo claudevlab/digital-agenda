@@ -21,7 +21,7 @@ export interface AppointmentResponseDTO {
   customerPhone: string;
 }
 
-// Aggiunta al file esistente
+
 export interface PagedResponse<T> {
   content: T[];
   totalElements: number;

@@ -8,8 +8,10 @@ import com.claudev.agenda.security.JwtAuthenticationFilter;
 import com.claudev.agenda.security.JwtUtil;
 import com.claudev.agenda.security.TokenBlackListService;
 import com.claudev.agenda.service.UserService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.Map;
 
 
 @RestController
@@ -79,6 +82,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
+    @RateLimiter(name = "login", fallbackMethod = "loginRateLimitFallback")
     public ResponseEntity<AuthResponseDTO> login (@Valid @RequestBody UserLoginDTO userLoginDTO) {
 
         // deleghiamo a spring security il controllo password
@@ -97,7 +101,7 @@ public class AuthController {
 
         // Restituisce il DTO completo (non solo il token!)
         AuthResponseDTO response = new AuthResponseDTO(
-                token,
+                token, // non serve piú il token
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),
@@ -109,7 +113,21 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // endpoitn recupero password 1
+    // Fallback quando rate limit exceeded
+    public ResponseEntity<Map<String, String>> loginRateLimitFallback(
+            UserLoginDTO userLoginDTO,
+            Exception ex) {
+
+        Map<String, String> errorResponse = Map.of(
+                "error", "Troppi tentativi di login. Riprova tra 15 minuti"
+        );
+
+        return ResponseEntity.status(429)
+                .header("Content-Type", "application/json")
+                .body(errorResponse);
+    }
+
+    // endpoint recupero password 1
     // il frontend invia solo le email
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword (
@@ -148,13 +166,17 @@ public class AuthController {
         }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<?> logout(HttpServletRequest request , HttpServletResponse httpServletResponse) {
+
+        // Estrai token dall'header Authorization
         String authHeader = request.getHeader("Authorization");
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             Date expiration = jwtUtil.extractClaime(token, Claims::getExpiration);
             tokenBlackListService.blacklistToken(token, expiration);
         }
+
         return ResponseEntity.ok("Logout effettuato con successo.");
     }
     }

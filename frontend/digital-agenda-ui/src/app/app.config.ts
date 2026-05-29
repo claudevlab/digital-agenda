@@ -1,10 +1,10 @@
 
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-
+import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { ErrorLoggingInterceptor } from './core/interceptors/error-logging.interceptor';
 
 export const appConfig : ApplicationConfig = {
   providers: [
@@ -16,8 +16,17 @@ export const appConfig : ApplicationConfig = {
     provideHttpClient(
       withFetch(), // Usa la Fetch API nativa del browser (più moderna di XHR)
       withInterceptors([jwtInterceptor])
-    )
+    ),
+
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, 
+      useClass: ErrorLoggingInterceptor, 
+      multi: true }
+
+    
   ]
+
+  
 };
 
 

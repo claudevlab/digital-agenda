@@ -1,5 +1,7 @@
 package com.claudev.agenda.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,8 @@ public class TokenBlackListService {
     private static final String PREFIX = "blacklist";
 
     private final StringRedisTemplate redisTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     public TokenBlackListService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -32,7 +36,13 @@ public class TokenBlackListService {
     }
 
     public boolean isBlacklisted (String token) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(PREFIX + token));
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey(PREFIX + token));
+        } catch (Exception exception) {
+            logger.error("Redis error during blacklist check", exception);
+            // Se Redis è down, SEMPRE blacklisare (fail-safe)
+            return true; // Blocca la richiesta se non possiamo verificare
+        }
     }
 
     // BLACK LIST TOKEN CON REDIS
