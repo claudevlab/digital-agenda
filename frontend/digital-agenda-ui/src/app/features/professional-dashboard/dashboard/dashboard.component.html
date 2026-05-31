@@ -43,7 +43,7 @@
 
       <h3>
         Appuntamenti Ricevuti
-        <!-- ✅ titolo dinamico in base al filtro attivo -->
+        <!--  titolo dinamico in base al filtro attivo -->
         @if (activeFilter === 'PENDING') {
         <span class="filter-badge filter-badge--pending">In Attesa</span>
         }
@@ -195,102 +195,124 @@
   <app-schedule-calendar></app-schedule-calendar>
 </div>
 
-<!-- Modal Rifiuto (Si apre in base al signal showRejectModal()) -->
-<div *ngIf="showRejectModal()" class="modal-backdrop"
-  style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1050; display: flex; align-items: center; justify-content: center;">
-  <div class="modal-content" style="background: white; padding: 24px; border-radius: 8px; width: 450px;">
-
-    <h5 class="mb-3 text-danger">
-      <i class="bi bi-x-circle me-2"></i>Rifiuta Appuntamento
-    </h5>
-
-    <p class="text-muted mb-3">Se lo desideri, puoi indicare un motivo per il rifiuto (verrà inviato al cliente).</p>
-
-    <!-- Quando digita, aggiorna il signal -->
-    <textarea class="form-control mb-4" rows="3" placeholder="Es: Imprevisto, per favore prenota in un altro orario..."
-      [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)"></textarea>
-
-    <div class="d-flex justify-content-end gap-2">
-      <button class="btn btn-outline-secondary" (click)="closeRejectModal()">Annulla</button>
-      <button class="btn btn-danger" (click)="confirmReject()">Conferma Rifiuto</button>
+<!-- Modal Rifiuto (Design Migliorato) -->
+<div *ngIf="showRejectModal()" class="action-modal-backdrop">
+  <div class="action-modal">
+    
+    <!-- Header -->
+    <div class="action-modal__header">
+      <div class="action-modal__icon-container text-danger bg-danger-subtle">
+        <i class="bi bi-calendar-x"></i>
+      </div>
+      <h5 class="action-modal__title">Non puoi accettare questo appuntamento?</h5>
     </div>
+
+        <!-- Body -->
+<div class="action-modal__body">
+  <p class="text-muted mb-3 text-center">
+    Se lo desideri, puoi indicare un motivo per il rifiuto. Verrà inviato al cliente per fargli sapere il motivo.
+  </p>
+
+  <div class="reject-reason-group">
+    <textarea
+      class="form-control custom-textarea reject-reason-textarea"
+      id="rejectReasonInput"
+      placeholder="Scrivi qui il motivo..."
+      [value]="rejectReason()"
+      (input)="rejectReason.set($any($event.target).value)">
+    </textarea>
+
+    <small class="reject-reason-hint">
+      <i class="bi bi-info-circle me-1"></i>
+      Es: Imprevisto improvviso, ti prego di riprenotare...
+    </small>
   </div>
 </div>
 
+    <!-- Footer con i bottoni -->
+    <div class="action-modal__footer">
+      <!-- Annulla in giallo (warning) -->
+      <button class="btn-cancel-action" (click)="closeRejectModal()">
+        <i class="bi bi-arrow-return-left me-1"></i> Ci ho ripensato
+      </button>
+      
+      <!-- Conferma in rosso (danger) -->
+      <button class="btn-confirm-danger" (click)="confirmReject()">
+        <i class="bi bi-x-circle me-1"></i> Sì, rifiuta
+      </button>
+    </div>
+
 <!-- Modal Info Cliente -->
-<!-- Modal Info Cliente (Design Migliorato) -->
-<div *ngIf="showCustomerModal()" class="modal-backdrop" style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1050; display: flex; align-items: center; justify-content: center;">
-  <div class="modal-content border-0" style="background: white; padding: 32px; border-radius: 12px; width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-    
-    <!-- Header Modale -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="mb-0 text-primary fw-bold">
+<div *ngIf="showCustomerModal()" class="customer-modal-backdrop">
+  <div class="customer-modal">
+
+    <!-- Header -->
+    <div class="customer-modal__header">
+      <h5 class="customer-modal__title">
         <i class="bi bi-person-vcard me-2"></i>Scheda Cliente
       </h5>
       <button type="button" class="btn-close" aria-label="Close" (click)="closeCustomerModal()"></button>
     </div>
-    
+
     @if (selectedCustomer()) {
-      <!-- Sezione Profilo (Avatar e Nome) -->
-      <div class="text-center mb-4 pb-3 border-bottom">
-        <div class="mx-auto mb-3 text-white d-flex align-items-center justify-content-center shadow-sm" 
-             style="width: 72px; height: 72px; font-size: 28px; border-radius: 50%; background: linear-gradient(135deg, #0d6efd, #0dcaf0);">
+
+      <!-- Profilo -->
+      <div class="customer-modal__profile">
+        <div class="customer-modal__avatar">
           {{ selectedCustomer()!.name.charAt(0).toUpperCase() }}
         </div>
-        <h4 class="mb-1 fw-bold text-dark">{{ selectedCustomer()!.name }}</h4>
-        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill">Cliente Registrato</span>
+        <h4 class="customer-modal__name">{{ selectedCustomer()!.name }}</h4>
+        <span class="customer-modal__role-badge">
+          <i class="bi bi-patch-check-fill me-1"></i>Cliente Registrato
+        </span>
       </div>
 
-      <!-- Sezione Contatti (Rettangoli colorati) -->
-      <div class="d-flex flex-column gap-3 mb-4">
-        
-        <!-- Box Telefono -->
-        <div class="d-flex align-items-center p-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
-          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+      <!-- Contatti -->
+      <div class="customer-modal__contacts">
+
+        <!-- Telefono -->
+        <div class="contact-box contact-box--phone">
+          <div class="contact-box__icon">
             <i class="bi bi-telephone-fill"></i>
           </div>
-          <div class="flex-grow-1">
-            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Telefono</small>
-            <div class="mt-1">
-              @if (selectedCustomer()!.phone) {
-                <a [href]="'tel:' + selectedCustomer()!.phone" class="text-decoration-none fw-bold fs-5" style="color: #2b3035;">
-                  {{ selectedCustomer()!.phone }}
-                </a>
-              } @else {
-                <span class="text-muted fst-italic">Non specificato</span>
-              }
-            </div>
+          <div class="contact-box__body">
+            <small class="contact-box__label">Telefono</small>
+            @if (selectedCustomer()!.phone) {
+              <a [href]="'tel:' + selectedCustomer()!.phone" class="contact-box__value">
+                {{ selectedCustomer()!.phone }}
+              </a>
+            } @else {
+              <span class="contact-box__empty">Non specificato</span>
+            }
           </div>
         </div>
 
-        <!-- Box Email -->
-        <div class="d-flex align-items-center p-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
-          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+        <!-- Email -->
+        <div class="contact-box contact-box--email">
+          <div class="contact-box__icon">
             <i class="bi bi-envelope-fill"></i>
           </div>
-          <div class="flex-grow-1 overflow-hidden">
-            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Email</small>
-            <div class="mt-1 text-truncate">
-              @if (selectedCustomer()!.email) {
-                <a [href]="'mailto:' + selectedCustomer()!.email" class="text-decoration-none fw-bold text-primary">
-                  {{ selectedCustomer()!.email }}
-                </a>
-              } @else {
-                <span class="text-muted fst-italic">Non specificata</span>
-              }
-            </div>
+          <div class="contact-box__body overflow-hidden">
+            <small class="contact-box__label">Email</small>
+            @if (selectedCustomer()!.email) {
+              <a [href]="'mailto:' + selectedCustomer()!.email" class="contact-box__value contact-box__value--email text-truncate d-block">
+                {{ selectedCustomer()!.email }}
+              </a>
+            } @else {
+              <span class="contact-box__empty">Non specificata</span>
+            }
           </div>
         </div>
 
       </div>
-      <br>
-      
-      <!-- Footer Modale -->
-      <div class="d-grid mt-2">
-        <button class="btn btn-secondary py-2 fw-semibold rounded-3" (click)="closeCustomerModal()">
-          Chiudi Scheda
+
+      <!-- Footer -->
+      <div class="customer-modal__footer">
+        <button class="customer-modal__close-btn" (click)="closeCustomerModal()">
+          <i class="bi bi-x-circle me-2"></i>Chiudi Scheda
         </button>
       </div>
+
     }
   </div>
 </div>

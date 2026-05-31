@@ -196,20 +196,29 @@
 
 // ===== STEPPER =====
 .stepper {
+  padding: 1rem 0; // ← aggiunge spazio sopra e sotto l'intera riga degli step
+  border-top: 1px solid #e9ecef;    // linea sottile sopra
+  border-bottom: 1px solid #e9ecef; // linea sottile sotto
+  margin-bottom: 1.75rem !important; // aumenta lo spazio verso il contenuto
+
   .step-badge {
-    background-color: #e9ecef;
-    color: #6c757d;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    transition: all 0.2s;
+  background-color: #ffffff;           // sfondo bianco
+  color: #adb5bd;                      // testo grigio chiaro
+  border: 2px solid #dee2e6;           // bordo grigio sottile
+  padding: 0.45rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
 
     &.active {
-      background-color: #0d6efd;
-      color: #ffffff;
-      font-weight: 600;
-    }
+    background: linear-gradient(135deg, #0d6efd, #6610f2); // sfumatura blu/viola
+    color: #ffffff;
+    border-color: transparent;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(13, 110, 253, 0.4);
+    transform: translateY(-1px); // leggero "sollevamento" per l'active
+  }
   }
 
   .step-arrow {
@@ -461,4 +470,10 @@
     border-color: #0d6efd !important;
     box-shadow: 0 0 0 3px rgba(13,110,253,0.15) !important;
   }
+
+  .dashboard-header {
+  // ...codice già esistente...
+  margin-bottom: 0.5rem !important; // avvicina l'header allo stepper
+  padding-bottom: 0.5rem;
+}
 }
