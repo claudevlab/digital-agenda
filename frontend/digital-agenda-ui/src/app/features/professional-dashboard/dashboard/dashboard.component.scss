@@ -84,6 +84,7 @@
   color: var(--text-muted);
   font-size: 0.95rem;
 }
+
 .btn-danger-sm {
   background: transparent;
   color: var(--danger);
@@ -98,6 +99,7 @@
     color: white;
   }
 }
+
 .empty-state {
   text-align: center;
   padding: 3rem;
@@ -152,6 +154,25 @@
   align-items: center;
   gap: 0.75rem;
   min-width: 160px;
+  line-height: 1.2;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    line-height: 1.2;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.15rem;
+    line-height: 1.1;
+  }
 }
 .apt-avatar {
   width: 38px;
@@ -205,7 +226,7 @@
 
 .text-decoration-underline-hover:hover { text-decoration: underline; }
 
-// layout di base (desktop) 
+// layout di base (desktop)
 .appointment-item {
   display: flex;
   align-items: flex-start;
@@ -216,7 +237,53 @@
 .apt-notes,
 .apt-status,
 .apt-actions {
-  min-width: 0; //  con flex per permettere al testo di stringersi
+  min-width: 0;
+}
+
+.apt-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 576px) {
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .apt-client {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .apt-datetime,
+  .apt-notes,
+  .apt-status,
+  .apt-actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .apt-notes {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .apt-actions {
+    margin-left: 0;
+    margin-top: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-confirm,
+  .btn-reject {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 576px) {
@@ -242,6 +309,21 @@
     word-break: break-word;
     overflow-wrap: anywhere;      // il testo lungo va a capo, non esce dal box
   }
+
+  .apt-actions {
+    margin-left: 0;           // Rimuove lo spostamento a destra
+    margin-top: 1rem;         // Aggiunge spazio tra i testi sopra e i bottoni
+    width: 100%;              // Occupa tutta la larghezza
+    flex-direction: column;   // I bottoni si mettono uno SOTTO l'altro
+    gap: 0.5rem;              // Spazio tra i bottoni in verticale
+    
+    // Su mobile, facciamo in modo che i bottoni siano larghi quanto lo schermo
+    .btn-confirm,
+    .btn-reject {
+      width: 100%;
+      justify-content: center; // Centra il testo nel bottone
+    }
+  }
 }
 
 // Aggiunta al tuo dashboard.component.scss
@@ -265,4 +347,422 @@
   &:hover {
     opacity: 1;
   }
+}
+
+// ===== MODAL SCHEDA CLIENTE =====
+
+.customer-modal-backdrop {
+  position: fixed;
+  inset: 0; // shorthand per top/right/bottom/left: 0
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px); // effetto blur sullo sfondo — tocco premium
+  animation: fadeInBackdrop 0.2s ease;
+}
+
+@keyframes fadeInBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.customer-modal {
+  background: white;
+  width: 420px;
+  max-width: 95vw;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  animation: slideUpModal 0.25s ease;
+
+  // ---- Header ----
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d6efd;
+  }
+
+  // ---- Profilo ----
+  &__profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    text-align: center;
+  }
+
+  &__avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.4);
+  }
+
+  &__name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 0.5rem;
+  }
+
+  &__role-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e8f0fe, #f0e8ff);
+    color: #5c35cc;
+    border: 1px solid #c5b3f5;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  // ---- Contatti ----
+  &__contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  // ---- Footer ----
+  &__footer {
+    display: grid;
+  }
+
+  &__close-btn {
+    background: none;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      background: #f8f9fa;
+      border-color: #adb5bd;
+      color: #212529;
+    }
+  }
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+// ===== CONTACT BOX =====
+.contact-box {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #adb5bd;
+    margin-bottom: 2px;
+  }
+
+  &__value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: #212529;
+
+    &--email { color: #0d6efd; }
+    &:hover  { text-decoration: underline; }
+  }
+
+  &__empty {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #adb5bd;
+  }
+
+  // Colori icona per tipo
+  &--phone .contact-box__icon {
+    background: linear-gradient(135deg, #198754, #20c997);
+    box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+  }
+
+  &--email .contact-box__icon {
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+    box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+  }
+}
+
+// ===== PULSANTI AZIONE (Conferma, Rifiuta, Elimina) =====
+
+.btn-confirm {
+  background: #198754;
+  color: white;
+  border: 1px solid #198754;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background: #146c43;
+    border-color: #146c43;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-reject,
+.btn-danger-sm {
+  background: white;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ===== ACTION MODAL (Conferme/Rifiuti) =====
+
+.action-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  animation: fadeInBackdrop 0.2s ease;
+}
+
+.action-modal {
+  background: white;
+  width: 450px;
+  max-width: 95vw;
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  animation: slideUpModal 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  &__icon-container {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    background-color: #f8d7da;
+    color: #dc3545;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #212529;
+  }
+
+  &__body {
+    width: 100%;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+// Custom Textarea (per renderla più morbida)
+.custom-textarea {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1rem;
+  resize: none; // Impedisce all'utente di ridimensionarla rovinando il layout
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: #dc3545; // Diventa rossa quando in focus (essendo un modale di rifiuto)
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+  }
+}
+
+// ===== BOTTONI MODALE =====
+
+.btn-cancel-action {
+  flex: 1;
+  background: white;
+  color: #d39e00;
+  border: 2px solid #ffc107;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #ffc107;
+    color: #000;
+  }
+}
+
+.btn-confirm-danger {
+  flex: 1;
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #b02a37;
+    border-color: #b02a37;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 400px) {
+  .action-modal__footer {
+    flex-direction: column;
+
+    .btn-confirm-danger {
+      order: 1;
+    }
+
+    .btn-cancel-action {
+      order: 2;
+    }
+  }
+}
+
+.reject-reason-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.reject-reason-textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: none;
+}
+
+.reject-reason-hint {
+  display: block;
+  width: 100%;
+  color: #6c757d;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding-left: 0.15rem;
 }
