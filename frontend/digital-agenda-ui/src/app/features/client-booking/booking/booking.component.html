@@ -23,10 +23,10 @@
       <button class="btn-refresh" (click)="backToDashboard()">
         ← Torna ai miei appuntamenti
       </button>
-    </div>
+    </div> 
 
     <!-- Stepper -->
-    <div class="stepper d-flex align-items-center gap-2 mb-4" *ngIf="step < 4">
+    <div class="stepper d-flex align-items-center gap-2 my-3" *ngIf="step < 4">
       <span [class]="step >= 1 ? 'step-badge active' : 'step-badge'">1 · Professionista</span>
       <span class="step-arrow">›</span>
       <span [class]="step >= 2 ? 'step-badge active' : 'step-badge'">2 · Data e Slot</span>
