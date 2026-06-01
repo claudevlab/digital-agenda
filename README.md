@@ -19,18 +19,20 @@ Il progetto adotta un'architettura moderna a **microservizi** con comunicazione 
 - **Database (MySQL):** Persistenza relazionale dei dati.
 - **Reverse Proxy (Traefik + Nginx):** Gestione del routing, terminazione SSL e serve dei file statici.
 - **Monitoring (Prometheus + Grafana):** Stack di osservabilità per il monitoraggio delle metriche applicative e di sistema.
+- **Cache & Token Store (Redis):** Utilizzato come store in-memory per la blacklist dei JWT invalidati (logout, revoca token), garantendo invalidazione immediata e performance elevate.
 
 ***
 
 ## ✨ Funzionalità Principali
 
 - **Autenticazione dual-mode:** Login tradizionale (email/password) e accesso tramite Google via **OAuth2**
-- **Sicurezza:** Gestione autenticazione e autorizzazione con **Spring Security** e token **JWT**
+- **Sicurezza:** Gestione autenticazione e autorizzazione con **Spring Security** e token **JWT**; blacklist dei token invalidati gestita con **Redis** per un logout sicuro e immediato
 - **Dashboard professionista:** Configurazione degli slot orari, gestione appuntamenti e impostazione dei giorni di indisponibilità
 - **Dashboard cliente:** Ricerca professionisti, prenotazione appuntamenti e storico prenotazioni
 - **Notifiche email automatiche:** Inviate in modo asincrono tramite microservizio dedicato e RabbitMQ
 - **API documentate:** Integrazione **Swagger / OpenAPI** per la documentazione degli endpoint REST
 - **Deploy in produzione:** Applicazione live su VPS con container Docker e CI/CD via GitHub Actions
+
 
 ***
 
@@ -45,6 +47,7 @@ Il progetto adotta un'architettura moderna a **microservizi** con comunicazione 
 | **DevOps & Infrastruttura** | Docker, Docker Compose, GitHub Actions (CI/CD), Traefik, Nginx |
 | **Monitoring** | Prometheus, Grafana |
 | **Documentazione** | Swagger / OpenAPI |
+| **Caching & Token Store** | Redis |
 
 ***
 
@@ -83,7 +86,6 @@ docker-compose up --build
 
 Per far evolvere l'ecosistema **Digital Agenda**, sono previste le seguenti funzionalità:
 
-- **💳 Integrazione Pagamenti Online:** Implementazione degli SDK di **Stripe** o **PayPal** per consentire ai clienti di pagare gli appuntamenti direttamente durante la prenotazione.
 - **📱 Applicazione Mobile:** Sviluppo di un'app nativa **Android / iOS** (con **Flutter** o **React Native**) per un'esperienza mobile ottimizzata sia per professionisti che per clienti.
 
 
@@ -118,13 +120,14 @@ The project leverages a modern **microservices** architecture with **event-drive
 - **Database (MySQL):** Reliable relational data persistence.
 - **Reverse Proxy (Traefik + Nginx):** Handles routing, SSL termination, and static file serving.
 - **Monitoring (Prometheus + Grafana):** Observability stack for application and system metrics.
+- **Cache & Token Store (Redis):** Used as an in-memory store for the JWT blacklist (logout, token revocation), ensuring immediate invalidation with high performance.
 
 ***
 
 ## ✨ Key Features
 
 - **Dual authentication:** Traditional login (email/password) and Google sign-in via **OAuth2**
-- **Security:** Authentication and authorization managed with **Spring Security** and **JWT** tokens
+- **Security:** Authentication and authorization managed with **Spring Security** and **JWT** tokens; invalidated token blacklist handled with **Redis** for immediate and secure logout
 - **Professional dashboard:** Schedule configuration, appointment management, and availability settings
 - **Client dashboard:** Search for professionals, book appointments, and view booking history
 - **Automated email notifications:** Sent asynchronously through a dedicated microservice via RabbitMQ
@@ -144,6 +147,7 @@ The project leverages a modern **microservices** architecture with **event-drive
 | **DevOps & Infrastructure** | Docker, Docker Compose, GitHub Actions (CI/CD), Traefik, Nginx |
 | **Monitoring** | Prometheus, Grafana |
 | **Documentation** | Swagger / OpenAPI |
+| **Caching & Token Store** | Redis |
 
 ***
 
