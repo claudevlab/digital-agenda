@@ -128,7 +128,7 @@ public class SecurityConfig {
                                                 "style-src 'self' 'unsafe-inline'; " +
                                                 "img-src 'self' data:; " +
                                                 "font-src 'self'; " +
-                                                "connect-src 'self' https://digital-agenda.it; " +
+                                                "connect-src 'self' https://digital-agenda.it https://api.digital-agenda.it https://www.digital-agenda.it; " +
                                                 "frame-ancestors 'none'; " +
                                                 "base-uri 'self'; " +
                                                 "form-action 'self'"
