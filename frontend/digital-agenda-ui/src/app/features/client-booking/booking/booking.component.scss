@@ -215,35 +215,57 @@
 
 // ===== STEPPER =====
 .stepper {
-  padding: 1rem 0; // ← aggiunge spazio sopra e sotto l'intera riga degli step
-  border-top: 1px solid #e9ecef;    // linea sottile sopra
-  border-bottom: 1px solid #e9ecef; // linea sottile sotto
-  margin-bottom: 1.75rem !important; // aumenta lo spazio verso il contenuto
+  padding: 1rem 0;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 1.75rem !important;
+  
+  // 1. Aggiungiamo flex-wrap per permettere agli step di andare a capo ordinatamente
+  flex-wrap: wrap; 
+  // 2. Assicuriamo che gli elementi siano centrati se vanno a capo
+  justify-content: center; 
 
   .step-badge {
-  background-color: #ffffff;           // sfondo bianco
-  color: #adb5bd;                      // testo grigio chiaro
-  border: 2px solid #dee2e6;           // bordo grigio sottile
-  padding: 0.45rem 1.1rem;
-  border-radius: 20px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  transition: all 0.25s ease;
+    background-color: #ffffff;
+    color: #adb5bd;
+    border: 2px solid #dee2e6;
+    padding: 0.45rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    // 3. Evitiamo che il testo si spezzi a metà parola forzatamente
+    white-space: nowrap; 
 
-  &.active {
-    background: linear-gradient(135deg, #0d6efd, #6610f2); // sfumatura blu/viola
-    color: #ffffff;
-    border-color: transparent;
-    font-weight: 600;
-    box-shadow: 0 3px 10px rgba(13, 110, 253, 0.4);
-    transform: translateY(-1px); // leggero "sollevamento" per l'active
+    &.active {
+      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      color: #ffffff;
+      border-color: transparent;
+      font-weight: 600;
+      box-shadow: 0 3px 10px rgba(13, 110, 253, 0.4);
+      transform: translateY(-1px);
+    }
   }
-}
 
   .step-arrow {
     color: #adb5bd;
     font-size: 1.2rem;
     line-height: 1;
+    // 4. Piccola media query per nascondere o ridurre le frecce su schermi minuscoli
+    @media (max-width: 480px) {
+      margin: 0 4px; 
+    }
+  }
+
+  // 5. Media query specifica per dispositivi mobili
+  @media (max-width: 576px) {
+    padding: 0.75rem 0;
+    gap: 0.5rem !important; // Riduciamo il gap di Bootstrap (gap-2) su mobile
+    
+    .step-badge {
+      padding: 0.35rem 0.75rem; // Riduciamo il padding interno
+      font-size: 0.75rem;       // Riduciamo la dimensione del font
+    }
   }
 }
 
