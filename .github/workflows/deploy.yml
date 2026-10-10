@@ -112,8 +112,8 @@ jobs:
       run: |
         ok=0
         for i in $(seq 1 12); do
-          fe=$(curl -s -o /dev/null -w "%{http_code}" https://digital-agenda.it)
-          be=$(curl -s -o /dev/null -w "%{http_code}" https://api.digital-agenda.it/actuator/health)
+          fe=$(curl -s -o /dev/null -w "%{http_code}" --resolve digital-agenda.it:443:127.0.0.1 https://digital-agenda.it/)
+          be=$(curl -s -o /dev/null -w "%{http_code}" --resolve api.digital-agenda.it:443:127.0.0.1 https://api.digital-agenda.it/actuator/health)
           echo "tentativo $i: frontend=$fe backend=$be"
           if [ "$fe" = "200" ] && [ "$be" = "401" ]; then ok=1; break; fi
           sleep 5
