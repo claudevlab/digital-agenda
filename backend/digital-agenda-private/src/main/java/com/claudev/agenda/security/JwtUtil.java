@@ -31,7 +31,7 @@ public class JwtUtil {
             @Value("${jwt.expiration:1800000}") long jwtExpiration ) {
 
         if(secretString.length() < 64) {
-            throw  new IllegalArgumentException("JWT deve essere almeno di 32 caratteri!");
+            throw  new IllegalArgumentException("JWT deve essere almeno di 64 caratteri!");
         }
 
         // hmacShaKeyFor richiede un array di byte di almeno 256 bit (32 byte)
@@ -67,7 +67,6 @@ public class JwtUtil {
     }
 
     // genera un nuovo token`aggiungendo nome ,data di creazione e scadenza firmando con la chiave segreta
-    // TO DO
     public String generateToken (String username , String role ) {
         return Jwts.builder()
                 .subject(username)
